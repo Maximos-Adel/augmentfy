@@ -2,7 +2,7 @@ import logo from '../assets/logo.png';
 import fy from '../assets/fy.svg';
 import supabase from '../supabase';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -63,10 +63,13 @@ const Login = () => {
           className="w-full rounded bg-gray-900 p-4 text-white"
           disabled={loading}
         >
-          {loading ? 'Signing In...' : 'Sign In'}
+          {loading ? 'Loading' : 'Sign In'}
         </button>
       </form>
       {error && <p className="text-rose-300">{error}</p>}
+      <Link to="/registration" className="cursor-pointer hover:underline">
+        Do not have an account
+      </Link>
     </div>
   );
 };
