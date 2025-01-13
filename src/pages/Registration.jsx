@@ -25,7 +25,7 @@ const Registration = () => {
         setError(error.message);
       } else {
         console.log('User signed up:', user);
-        navigate('/');
+        navigate('/app');
       }
     } catch (error) {
       console.error('Unexpected error:', error);

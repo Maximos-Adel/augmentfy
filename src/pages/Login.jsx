@@ -26,7 +26,7 @@ const Login = () => {
         setError(error.message);
       } else if (data.user) {
         console.log('User signed in:', data.user);
-        navigate('/');
+        navigate('/app');
       }
     } catch (error) {
       console.error('Unexpected error:', error);

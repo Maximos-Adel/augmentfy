@@ -9,7 +9,7 @@ export const routesList = [
   { index: true, element: <Navigate to="/login" replace /> },
   { path: '/registration', element: <Registration /> },
   { path: '/login', element: <Login /> },
-  { path: '/', element: <Home /> },
+  { path: '/app', element: <Home /> },
 ];
 
 export const router = createBrowserRouter(routesList);
