@@ -5,7 +5,6 @@ import electric from '../assets/electric.svg';
 import gift from '../assets/gift.svg';
 import pic from '../assets/Capture.jpg';
 import supabase from '../supabase';
-// import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 
 const Header = () => {

@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import stars from '../assets/stars.svg';
 import cubic from '../assets/cubic.svg';
 import x from '../assets/x.svg';
-// import logo from '../assets/logo.png';
+import logo from '../assets/logo.png';
 import download from '../assets/download.svg';
 import downloadBlack from '../assets/download-black.svg';
 import { useState } from 'react';
@@ -225,11 +225,11 @@ const Home = () => {
             placeholder="Give your generation a name"
             value={fileData?.fileName}
           />
-          {/* <div className="mt-2 flex items-start justify-center gap-2 text-sm text-gray-300">
+          <div className="mt-2 flex items-start justify-center gap-2 text-sm text-gray-300">
             <p>1 min</p>
             <img src={logo} className="w-8" />
             <p>-10</p>
-          </div> */}
+          </div>
           <button
             className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-purple-gradient p-2 py-3 text-lg font-medium text-black disabled:cursor-not-allowed"
             onClick={handleFetchDetails}
@@ -305,16 +305,6 @@ const Home = () => {
         </div>
 
         <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
-          {/* {modelDetails?.status === 'SUCCEEDED' && (
-            <div className="w-full rounded-lg bg-purple-gradient p-[1px]">
-              <img
-                src={modelDetails?.thumbnail_url}
-                alt=""
-                className="h-full w-full rounded-lg bg-[#060405] object-contain p-2"
-              />
-            </div>
-          )} */}
-
           <ModelsStored />
         </div>
       </div>
