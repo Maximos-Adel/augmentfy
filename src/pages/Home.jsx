@@ -116,12 +116,12 @@ const Home = () => {
           if (data.status === 'SUCCEEDED') {
             setModelDetails(data); // Save model details in state
 
-            // Use the `data` object directly instead of `modelDetails`
-            uploadToSupabase(
-              'models',
-              `objects/${data.id}.json`, // Use `data.id` instead of `modelDetails?.id`
-              data,
-            );
+            // // Use the `data` object directly instead of `modelDetails`
+            // uploadToSupabase(
+            //   'models',
+            //   `objects/${data.id}.json`, // Use `data.id` instead of `modelDetails?.id`
+            //   data,
+            // );
 
             setGenerateLoading(false);
             setProgress(100); // Task is fully completed
@@ -304,9 +304,9 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
+        {/* <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
           <ModelsStored />
-        </div>
+        </div> */}
       </div>
     </div>
   );
