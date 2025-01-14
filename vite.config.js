@@ -25,4 +25,13 @@ export default defineConfig({
   //     loader: 'file-loader',
   //   },
   // ],
+  server: {
+    proxy: {
+      '/model': {
+        target: 'https://assets.meshy.ai',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/model/, ''),
+      },
+    },
+  },
 });

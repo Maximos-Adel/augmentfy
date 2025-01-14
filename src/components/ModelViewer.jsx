@@ -7,7 +7,7 @@ const ModelViewer = ({ glbUrl }) => {
     <div>
       {/* 3D Model Viewer */}
       <model-viewer
-        src={`/model${glbUrl}`} // Proxy to the target server
+        src={glbUrl} // Directly pass the full URL
         alt="A 3D model"
         auto-rotate
         camera-controls
