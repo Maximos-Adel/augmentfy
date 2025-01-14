@@ -1,3 +1,8 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+  "rewrites": [
+    {
+      "source": "/model/:path*",
+      "destination": "https://assets.meshy.ai/:path*"
+    }
+  ]
 }
