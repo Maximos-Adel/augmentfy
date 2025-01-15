@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  const { url } = req.query; // Get the URL parameter from the query string
+  const { url } = req.query;
 
   if (!url) {
     return res.status(400).json({ error: 'Missing URL parameter' });
@@ -9,19 +9,19 @@ export default async function handler(req, res) {
 
   try {
     const response = await axios.get(decodeURIComponent(url), {
-      responseType: 'stream', // Stream the response to handle large files
+      responseType: 'stream', // Stream the file for large responses
     });
 
-    // Set CORS headers
+    // Set headers to handle content type and CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    // Set content type and pipe the file stream to the client
     res.setHeader('Content-Type', response.headers['content-type']);
+
+    // Pipe the response data to the client
     response.data.pipe(res);
   } catch (error) {
     console.error('Error fetching the GLB file:', error.message);
-    res.status(500).json({ error: 'Failed to fetch the GLB file' });
+    res.status(500).send('Failed to fetch the GLB file');
   }
 }
