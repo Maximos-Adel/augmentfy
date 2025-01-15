@@ -1,7 +1,3 @@
-/* eslint-disable react/prop-types */
-
-import '@google/model-viewer';
-
 const ModelViewer = ({ glbUrl }) => {
   return (
     <div>
