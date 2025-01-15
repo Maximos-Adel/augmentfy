@@ -6,13 +6,23 @@ const ModelViewer = ({ glbUrl }) => {
   return (
     <div>
       {/* 3D Model Viewer */}
+      {/* <model-viewer
+        alt="Neil Armstrong's Spacesuit"
+        // src={`/mesh${glbUrl}`}
+        src={glbUrl}
+        ar
+        auto-rotate
+        crossorigin="anonymous"
+        camera-controls
+        
+      ></model-viewer> */}
       <model-viewer
-        src={glbUrl} // Directly pass the full URL
-        alt="A 3D model"
+        alt="3D Model"
+        src={`/api/mesh?url=${encodeURIComponent(glbUrl)}`}
         auto-rotate
         camera-controls
-        style={{ width: '100%', height: '500px' }}
-        crossorigin="anonymous" // Ensure CORS is handled correctly
+        crossorigin="anonymous"
+        ar
       ></model-viewer>
     </div>
   );

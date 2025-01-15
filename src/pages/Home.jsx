@@ -9,8 +9,8 @@ import logo from '../assets/logo.png';
 import download from '../assets/download.svg';
 import downloadBlack from '../assets/download-black.svg';
 import { useState } from 'react';
-import supabase from '../supabase';
-import ModelsStored from '../components/ModelsStored';
+// import supabase from '../supabase';
+// import ModelsStored from '../components/ModelsStored';
 const Home = () => {
   const [fileData, setFileData] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
@@ -70,28 +70,28 @@ const Home = () => {
     }
   };
 
-  const uploadToSupabase = async (bucketName, filePath, object) => {
-    try {
-      // Convert the object to a Blob
-      const blob = new Blob([JSON.stringify(object)], {
-        type: 'application/json',
-      });
+  // const uploadToSupabase = async (bucketName, filePath, object) => {
+  //   try {
+  //     // Convert the object to a Blob
+  //     const blob = new Blob([JSON.stringify(object)], {
+  //       type: 'application/json',
+  //     });
 
-      // Upload the Blob to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from(bucketName)
-        .upload(filePath, blob, { contentType: 'application/json' });
+  //     // Upload the Blob to Supabase Storage
+  //     const { data, error } = await supabase.storage
+  //       .from(bucketName)
+  //       .upload(filePath, blob, { contentType: 'application/json' });
 
-      if (error) {
-        console.error('Error uploading file:', error.message);
-        return;
-      }
+  //     if (error) {
+  //       console.error('Error uploading file:', error.message);
+  //       return;
+  //     }
 
-      console.log('File uploaded successfully:', data);
-    } catch (error) {
-      console.error('Unexpected error:', error.message);
-    }
-  };
+  //     console.log('File uploaded successfully:', data);
+  //   } catch (error) {
+  //     console.error('Unexpected error:', error.message);
+  //   }
+  // };
 
   const pollTaskStatus = async (taskId) => {
     const headers = {
