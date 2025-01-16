@@ -9,7 +9,7 @@ import logo from '../assets/logo.png';
 import download from '../assets/download.svg';
 import downloadBlack from '../assets/download-black.svg';
 import { useState } from 'react';
-// import supabase from '../supabase';
+import supabase from '../supabase';
 // import ModelsStored from '../components/ModelsStored';
 const Home = () => {
   const [fileData, setFileData] = useState(null);
@@ -41,7 +41,7 @@ const Home = () => {
 
         // Proceed with 3D conversion
         const headers = {
-          Authorization: `Bearer msy_sZ5dmSN5okZGzpLCTq0m8YwkozrCH6enAO9N`,
+          Authorization: `Bearer msy_PXoWn0c4SlXYgAkihRGdGDhKh5dPuUscU4h1`,
         };
         const payload = {
           image_url: base64Content,
@@ -93,9 +93,45 @@ const Home = () => {
   //   }
   // };
 
+  const fetchGlbFile = async (glbUrl) => {
+    try {
+      const response = await fetch(glbUrl);
+      if (!response.ok) {
+        throw new Error('Failed to fetch .glb file');
+      }
+      return await response.blob(); // Convert the response to a Blob
+    } catch (error) {
+      console.error('Error fetching GLB file:', error);
+      return null;
+    }
+  };
+
+  const uploadToSupabase = async (blob, fileName) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('models') // Replace with your Supabase bucket name
+        .upload(`3dmodels/${fileName}`, blob, {
+          contentType: 'model/gltf-binary',
+        });
+
+      if (error) {
+        console.error('Error uploading to Supabase:', error);
+        return null;
+      }
+
+      const { publicURL } = supabase.storage
+        .from('models')
+        .getPublicUrl(`3dmodels/${fileName}`);
+      return publicURL;
+    } catch (error) {
+      console.error('Error uploading to Supabase:', error);
+      return null;
+    }
+  };
+
   const pollTaskStatus = async (taskId) => {
     const headers = {
-      Authorization: `Bearer msy_sZ5dmSN5okZGzpLCTq0m8YwkozrCH6enAO9N`,
+      Authorization: `Bearer msy_PXoWn0c4SlXYgAkihRGdGDhKh5dPuUscU4h1`,
     };
     const pollingInterval = 5000; // Poll every 5 seconds
 
@@ -114,18 +150,34 @@ const Home = () => {
           console.log('Polling Response:', data);
 
           if (data.status === 'SUCCEEDED') {
-            setModelDetails(data); // Save model details in state
-
-            // // Use the `data` object directly instead of `modelDetails`
-            // uploadToSupabase(
-            //   'models',
-            //   `objects/${data.id}.json`, // Use `data.id` instead of `modelDetails?.id`
-            //   data,
-            // );
-
+            clearInterval(interval); // Stop polling
             setGenerateLoading(false);
             setProgress(100); // Task is fully completed
-            clearInterval(interval); // Stop polling
+
+            // Extract the GLB URL
+            const glbUrl = data?.model_urls?.glb;
+
+            if (glbUrl) {
+              // Fetch and upload the GLB file to Supabase
+              console.log('GLB URL found:', glbUrl);
+              const glbBlob = await fetchGlbFile(glbUrl);
+              if (glbBlob) {
+                const supabaseUrl = await uploadToSupabase(
+                  glbBlob,
+                  `${taskId}.glb`,
+                );
+                if (supabaseUrl) {
+                  setModelDetails({ ...data, supabaseUrl }); // Save details with Supabase URL
+                  console.log('3D model uploaded to Supabase:', supabaseUrl);
+                } else {
+                  console.error('Failed to upload GLB to Supabase');
+                }
+              } else {
+                console.error('Failed to fetch GLB file');
+              }
+            } else {
+              console.error('GLB URL not found in response');
+            }
           } else if (data.status === 'FAILED') {
             setGenerateLoading(false);
             clearInterval(interval); // Stop polling

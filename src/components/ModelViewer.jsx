@@ -14,7 +14,7 @@ const ModelViewer = ({ glbUrl }) => {
       ></model-viewer> */}
       <model-viewer
         alt="3D Model"
-        src={`/api/mesh?url=${encodeURIComponent(glbUrl)}`}
+        src={`/api/mesh?url=${glbUrl}`}
         auto-rotate
         camera-controls
         crossorigin="anonymous"
