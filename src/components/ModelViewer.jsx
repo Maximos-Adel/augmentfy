@@ -2,23 +2,14 @@ const ModelViewer = ({ glbUrl }) => {
   return (
     <div>
       {/* 3D Model Viewer */}
-      {/* <model-viewer
-        alt="Neil Armstrong's Spacesuit"
-        // src={`/mesh${glbUrl}`}
-        src={glbUrl}
-        ar
-        auto-rotate
-        crossorigin="anonymous"
-        camera-controls
-        
-      ></model-viewer> */}
       <model-viewer
-        alt="3D Model"
-        src={`/api/mesh?url=${glbUrl}`}
-        auto-rotate
-        camera-controls
-        crossorigin="anonymous"
+        alt="Neil Armstrong's Spacesuit"
+        src={`/mesh${glbUrl}`}
         ar
+        auto-rotate
+        crossorigin="anonymous"
+        camera-controls
+        style={{ width: '100%', height: '500px' }}
       ></model-viewer>
     </div>
   );
