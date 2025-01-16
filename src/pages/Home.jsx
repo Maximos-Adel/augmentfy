@@ -95,7 +95,7 @@ const Home = () => {
 
   const fetchGlbFile = async (glbUrl) => {
     try {
-      const response = await fetch(glbUrl);
+      const response = await fetch(glbUrl, { mode: 'no-cors' });
       if (!response.ok) {
         throw new Error('Failed to fetch .glb file');
       }
@@ -147,19 +147,16 @@ const Home = () => {
           );
           const data = response.data;
 
-          console.log('Polling Response:', data);
-
           if (data.status === 'SUCCEEDED') {
             clearInterval(interval); // Stop polling
             setGenerateLoading(false);
             setProgress(100); // Task is fully completed
 
-            // Extract the GLB URL
             const glbUrl = data?.model_urls?.glb;
 
             if (glbUrl) {
+              console.log('GLB URL:', glbUrl);
               // Fetch and upload the GLB file to Supabase
-              console.log('GLB URL found:', glbUrl);
               const glbBlob = await fetchGlbFile(glbUrl);
               if (glbBlob) {
                 const supabaseUrl = await uploadToSupabase(
@@ -168,15 +165,12 @@ const Home = () => {
                 );
                 if (supabaseUrl) {
                   setModelDetails({ ...data, supabaseUrl }); // Save details with Supabase URL
-                  console.log('3D model uploaded to Supabase:', supabaseUrl);
                 } else {
                   console.error('Failed to upload GLB to Supabase');
                 }
               } else {
                 console.error('Failed to fetch GLB file');
               }
-            } else {
-              console.error('GLB URL not found in response');
             }
           } else if (data.status === 'FAILED') {
             setGenerateLoading(false);
