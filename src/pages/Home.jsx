@@ -9,8 +9,8 @@ import logo from '../assets/logo.png';
 import download from '../assets/download.svg';
 import downloadBlack from '../assets/download-black.svg';
 import { useState } from 'react';
-// import supabase from '../supabase';
-// import ModelsStored from '../components/ModelsStored';
+import supabase from '../supabase';
+import ModelsStored from '../components/ModelsStored';
 const Home = () => {
   const [fileData, setFileData] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
@@ -70,6 +70,26 @@ const Home = () => {
     }
   };
 
+  const uploadToSupabase = async (bucketName, filePath, object) => {
+    try {
+      // Convert the object to a Blob
+      const blob = new Blob([JSON.stringify(object)], {
+        type: 'application/json',
+      });
+      // Upload the Blob to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from(bucketName)
+        .upload(filePath, blob, { contentType: 'application/json' });
+      if (error) {
+        console.error('Error uploading file:', error.message);
+        return;
+      }
+      console.log('File uploaded successfully:', data);
+    } catch (error) {
+      console.error('Unexpected error:', error.message);
+    }
+  };
+
   const pollTaskStatus = async (taskId) => {
     const headers = {
       Authorization: `Bearer msy_PXoWn0c4SlXYgAkihRGdGDhKh5dPuUscU4h1`,
@@ -92,9 +112,15 @@ const Home = () => {
 
           if (data.status === 'SUCCEEDED') {
             setModelDetails(data);
-            clearInterval(interval); // Stop polling
+            // Use the `data` object directly instead of `modelDetails`
+            uploadToSupabase(
+              'models',
+              `objects/${data.id}.json`, // Use `data.id` instead of `modelDetails?.id`
+              data,
+            );
             setGenerateLoading(false);
             setProgress(100); // Task is fully completed
+            clearInterval(interval); // Stop polling
           } else if (data.status === 'FAILED') {
             setGenerateLoading(false);
             clearInterval(interval); // Stop polling
@@ -273,9 +299,9 @@ const Home = () => {
           </div>
         </div>
 
-        {/* <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
+        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
           <ModelsStored />
-        </div> */}
+        </div>
       </div>
     </div>
   );
