@@ -1,9 +1,3 @@
-import PropTypes from 'prop-types';
-
-ModelViewer.propTypes = {
-  glbUrl: PropTypes.string.isRequired,
-};
-
 const ModelViewer = ({ glbUrl }) => {
   const proxyUrl = `/api/glb-proxy?url=${encodeURIComponent(glbUrl)}`;
 
