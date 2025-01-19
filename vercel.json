@@ -1,13 +1,8 @@
 {
-  "headers": [
+  "rewrites": [
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
-      ]
+      "source": "/mesh/:path*",
+      "destination": "https://assets.meshy.ai/:path*"
     }
   ]
 }

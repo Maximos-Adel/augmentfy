@@ -3,7 +3,7 @@ const ModelViewer = ({ glbUrl }) => {
     <div>
       {/* 3D Model Viewer */}
       <model-viewer
-        alt="Neil Armstrong's Spacesuit"
+        alt="3D Model"
         src={`/mesh${glbUrl}`}
         ar
         auto-rotate
