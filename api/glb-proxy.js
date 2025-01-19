@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer YOUR_API_KEY`, // Replace with your actual API key
+        Authorization: `Bearer msy_PXoWn0c4SlXYgAkihRGdGDhKh5dPuUscU4h1`, // Replace with your actual API key
       },
     });
 
