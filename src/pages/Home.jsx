@@ -334,7 +334,7 @@ const Home = () => {
           <div className="mt-4 flex flex-wrap gap-2">
             {mediaData?.map((data) => (
               <div
-                className="h-36 w-36 rounded-lg bg-purple-gradient p-[1px]"
+                className="h-36 w-36 cursor-pointer rounded-lg bg-purple-gradient p-[1px]"
                 key={data.thumbnail} // Fallback key if id is missing
                 onClick={() => setProxyUrl(data.meta_data.glb)}
               >
