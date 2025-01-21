@@ -39,7 +39,7 @@ const Home = () => {
 
     fetchUser();
   }, []);
-  console.log(user);
+  console.log('user', user);
 
   const handleImageUploadAndConvertTo3D = async (e) => {
     const file = e.target.files[0];
@@ -298,33 +298,33 @@ const Home = () => {
         <div className="flex h-full w-2/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
           <div className="h-full rounded-xl bg-purple-gradient p-[1px]">
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
-              {modelDetails && modelDetails?.status === 'SUCCEEDED' && (
-                <>
-                  <ModelViewer glbUrl={proxyUrl} />
-                  <div className="mx-auto mt-auto w-max rounded-xl bg-purple-gradient p-[1px]">
-                    <div className="group w-full rounded-xl bg-[#060405] px-4 py-2 text-center text-white hover:bg-purple-gradient hover:text-black">
-                      <a
-                        href={modelDetails?.model_urls?.glb}
-                        className="flex items-center gap-2"
-                      >
-                        {/* Default SVG */}
-                        <img
-                          src={download}
-                          className="w-5 group-hover:hidden"
-                          alt="Download Icon"
-                        />
-                        {/* Hover SVG */}
-                        <img
-                          src={downloadBlack} // Replace with your hover SVG
-                          className="hidden w-5 group-hover:block"
-                          alt="Download Icon on Hover"
-                        />
-                        Download 3D Model
-                      </a>
-                    </div>
+              {/* {modelDetails && modelDetails?.status === 'SUCCEEDED' && ( */}
+              <>
+                <ModelViewer glbUrl={proxyUrl} />
+                <div className="mx-auto mt-auto w-max rounded-xl bg-purple-gradient p-[1px]">
+                  <div className="group w-full rounded-xl bg-[#060405] px-4 py-2 text-center text-white hover:bg-purple-gradient hover:text-black">
+                    <a
+                      href={modelDetails?.model_urls?.glb}
+                      className="flex items-center gap-2"
+                    >
+                      {/* Default SVG */}
+                      <img
+                        src={download}
+                        className="w-5 group-hover:hidden"
+                        alt="Download Icon"
+                      />
+                      {/* Hover SVG */}
+                      <img
+                        src={downloadBlack} // Replace with your hover SVG
+                        className="hidden w-5 group-hover:block"
+                        alt="Download Icon on Hover"
+                      />
+                      Download 3D Model
+                    </a>
                   </div>
-                </>
-              )}
+                </div>
+              </>
+              {/* )} */}
             </div>
           </div>
         </div>

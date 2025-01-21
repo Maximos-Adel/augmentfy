@@ -1,6 +1,9 @@
 const ModelViewer = ({ glbUrl }) => {
   const proxyUrl = `/api/glb-proxy?url=${encodeURIComponent(glbUrl)}`;
 
+  console.log('glbUrl', glbUrl);
+  console.log('proxyUrl', proxyUrl);
+
   return (
     <div>
       <model-viewer
