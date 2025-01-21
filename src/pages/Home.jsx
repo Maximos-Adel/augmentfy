@@ -60,7 +60,7 @@ const Home = () => {
 
         // Proceed with 3D conversion
         const headers = {
-          Authorization: `Bearer msy_PXoWn0c4SlXYgAkihRGdGDhKh5dPuUscU4h1`,
+          Authorization: `Bearer msy_vIzERkacegAOdOxeRcE7TpEY2E8HnWa6NESx`,
         };
         const payload = {
           image_url: base64Content,
@@ -91,7 +91,7 @@ const Home = () => {
 
   const pollTaskStatus = async (taskId) => {
     const headers = {
-      Authorization: `Bearer msy_PXoWn0c4SlXYgAkihRGdGDhKh5dPuUscU4h1`,
+      Authorization: `Bearer msy_vIzERkacegAOdOxeRcE7TpEY2E8HnWa6NESx`,
     };
     const pollingInterval = 5000; // Poll every 5 seconds
 
