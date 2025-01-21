@@ -16,7 +16,7 @@ const Registration = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { user, error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -24,8 +24,18 @@ const Registration = () => {
         console.error('Error signing up:', error.message);
         setError(error.message);
       } else {
-        console.log('User signed up:', user);
-        navigate('/app');
+        const {
+          user: { id, email },
+        } = data;
+        console.log('//////////////');
+        console.log(id, email);
+        console.log('//////////////');
+        const test = await supabase.from('users').select();
+        console.log(test);
+        const createdUser = await supabase.from('users').insert({ id, email });
+        console.log('creat', createdUser);
+        console.log('User signed up:', data.user);
+        navigate('/');
       }
     } catch (error) {
       console.error('Unexpected error:', error);

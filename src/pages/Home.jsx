@@ -8,9 +8,10 @@ import x from '../assets/x.svg';
 import logo from '../assets/logo.png';
 import download from '../assets/download.svg';
 import downloadBlack from '../assets/download-black.svg';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import supabase from '../supabase';
-import ModelsStored from '../components/ModelsStored';
+// import ModelsStored from '../components/ModelsStored';
+
 const Home = () => {
   const [fileData, setFileData] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
@@ -21,6 +22,24 @@ const Home = () => {
   const [modelDetails, setModelDetails] = useState(null);
   const [errorUploading, setErrorUploading] = useState(null);
   const [errorGenerating, setErrorGenerating] = useState(null);
+
+  const [user, setUser] = useState(null);
+  const [proxyUrl, setProxyUrl] = useState(modelDetails?.model_urls?.glb || ''); // Default to the first item's URL
+  console.log('proxy', proxyUrl);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('Error fetching user:', error.message);
+      } else {
+        setUser(data?.user);
+      }
+    };
+
+    fetchUser();
+  }, []);
+  console.log(user);
 
   const handleImageUploadAndConvertTo3D = async (e) => {
     const file = e.target.files[0];
@@ -70,26 +89,6 @@ const Home = () => {
     }
   };
 
-  const uploadToSupabase = async (bucketName, filePath, object) => {
-    try {
-      // Convert the object to a Blob
-      const blob = new Blob([JSON.stringify(object)], {
-        type: 'application/json',
-      });
-      // Upload the Blob to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from(bucketName)
-        .upload(filePath, blob, { contentType: 'application/json' });
-      if (error) {
-        console.error('Error uploading file:', error.message);
-        return;
-      }
-      console.log('File uploaded successfully:', data);
-    } catch (error) {
-      console.error('Unexpected error:', error.message);
-    }
-  };
-
   const pollTaskStatus = async (taskId) => {
     const headers = {
       Authorization: `Bearer msy_PXoWn0c4SlXYgAkihRGdGDhKh5dPuUscU4h1`,
@@ -112,12 +111,13 @@ const Home = () => {
 
           if (data.status === 'SUCCEEDED') {
             setModelDetails(data);
-            // Use the `data` object directly instead of `modelDetails`
-            uploadToSupabase(
-              'models',
-              `objects/${data.id}.json`, // Use `data.id` instead of `modelDetails?.id`
-              data,
-            );
+
+            // supabase insertion
+            await supabase.from('media').insert({
+              user_id: user.id,
+              meta_data: data.model_urls,
+              thumbnail: data.thumbnail_url,
+            });
             setGenerateLoading(false);
             setProgress(100); // Task is fully completed
             clearInterval(interval); // Stop polling
@@ -149,6 +149,36 @@ const Home = () => {
     setGenerateLoading(true);
     pollTaskStatus(modelId); // Start polling for task status
   };
+  const [mediaData, setMediaData] = useState([]);
+  const [error, setError] = useState(null);
+
+  // let limit;
+  // let take = limit ?? 10;
+  // let offest = (page - 1 || 1) * take;
+
+  useEffect(() => {
+    const fetchMedia = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('media')
+          .select('*')
+          .eq('user_id', user?.id);
+        // .range(offest - 1, take - 1);
+        if (error) {
+          setError(error.message); // Handle the error
+        } else {
+          setMediaData(data); // Set the data to state
+        }
+      } catch (err) {
+        setError(`"An unexpected error occurred" ${err}`); // Handle unexpected errors
+      }
+    };
+
+    fetchMedia(); // Call the async function
+  }, [user?.id]); // Empty dependency array ensures it runs only once on mount
+
+  console.log('error', error);
+  console.log('data', mediaData);
 
   return (
     <div className="flex h-screen w-full flex-col">
@@ -270,7 +300,7 @@ const Home = () => {
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
               {modelDetails && modelDetails?.status === 'SUCCEEDED' && (
                 <>
-                  <ModelViewer glbUrl={modelDetails?.model_urls?.glb} />
+                  <ModelViewer glbUrl={proxyUrl} />
                   <div className="mx-auto mt-auto w-max rounded-xl bg-purple-gradient p-[1px]">
                     <div className="group w-full rounded-xl bg-[#060405] px-4 py-2 text-center text-white hover:bg-purple-gradient hover:text-black">
                       <a
@@ -300,7 +330,22 @@ const Home = () => {
         </div>
 
         <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
-          <ModelsStored />
+          {/* <ModelsStored /> */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {mediaData?.map((data) => (
+              <div
+                className="h-36 w-36 rounded-lg bg-purple-gradient p-[1px]"
+                key={data.thumbnail} // Fallback key if id is missing
+                onClick={() => setProxyUrl(data.meta_data.glb)}
+              >
+                <img
+                  src={data.thumbnail}
+                  alt="Model Thumbnail"
+                  className="h-full w-full rounded-lg bg-[#060405] object-contain p-2"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -7,8 +7,8 @@ import Home from '../pages/Home';
 
 export const routesList = [
   // { index: true, element: <Navigate to="/login" replace /> },
-  // { path: '/registration', element: <Registration /> },
-  // { path: '/login', element: <Login /> },
+  { path: '/registration', element: <Registration /> },
+  { path: '/login', element: <Login /> },
   { path: '/', element: <Home /> },
 ];
 
