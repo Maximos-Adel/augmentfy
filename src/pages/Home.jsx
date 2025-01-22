@@ -291,6 +291,8 @@ const Home = () => {
       )
       .subscribe();
 
+    console.log('Subscription created:', subscription);
+
     return () => {
       supabase.removeChannel(subscription);
     };
