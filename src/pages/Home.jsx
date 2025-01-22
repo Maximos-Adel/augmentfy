@@ -8,7 +8,7 @@ import x from '../assets/x.svg';
 import logo from '../assets/logo.png';
 import download from '../assets/download.svg';
 import downloadBlack from '../assets/download-black.svg';
-import { useState, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import supabase from '../supabase';
 // import ModelsStored from '../components/ModelsStored';
 
@@ -26,6 +26,7 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [proxyUrl, setProxyUrl] = useState(''); // Default to the first item's URL
   console.log('proxy', proxyUrl);
+  console.log('modelDetails', modelDetails);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -179,7 +180,54 @@ const Home = () => {
   // }, [user?.id]);
 
   // Function to fetch media from the database
-  const fetchMedia = async () => {
+  // const fetchMedia = async () => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from('media')
+  //       .select('*')
+  //       .eq('user_id', user?.id);
+
+  //     if (error) {
+  //       setError(error.message); // Handle the error
+  //     } else {
+  //       setMediaData(data); // Set the data to state
+  //     }
+  //   } catch (err) {
+  //     setError(`"An unexpected error occurred" ${err}`); // Handle unexpected errors
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   if (!user?.id) return;
+
+  //   // Fetch media initially when the component mounts
+  //   fetchMedia();
+
+  //   // Set up real-time subscription
+  //   const subscription = supabase
+  //     .channel('media-changes') // A unique name for your subscription
+  //     .on(
+  //       'postgres_changes',
+  //       {
+  //         event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+  //         schema: 'public', // Replace with your schema name if different
+  //         table: 'media',
+  //         filter: `user_id=eq.${user.id}`, // Filter events for this user
+  //       },
+  //       (payload) => {
+  //         console.log('Database change detected:', payload);
+  //         fetchMedia(); // Refetch data on database changes
+  //       },
+  //     )
+  //     .subscribe();
+
+  //   // Cleanup subscription on unmount
+  //   return () => {
+  //     supabase.removeChannel(subscription);
+  //   };
+  // }, [user?.id]);
+
+  const fetchMedia = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('media')
@@ -192,39 +240,49 @@ const Home = () => {
         setMediaData(data); // Set the data to state
       }
     } catch (err) {
-      setError(`"An unexpected error occurred" ${err}`); // Handle unexpected errors
+      setError(`An unexpected error occurred: ${err}`); // Handle unexpected errors
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user?.id) return;
 
-    // Fetch media initially when the component mounts
+    // Fetch media initially
     fetchMedia();
 
     // Set up real-time subscription
     const subscription = supabase
-      .channel('media-changes') // A unique name for your subscription
+      .channel('media-changes')
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
-          schema: 'public', // Replace with your schema name if different
+          event: '*',
+          schema: 'public',
           table: 'media',
-          filter: `user_id=eq.${user.id}`, // Filter events for this user
+          filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('Database change detected:', payload);
-          fetchMedia(); // Refetch data on database changes
+          if (payload.eventType === 'INSERT') {
+            setMediaData((prev) => [...prev, payload.new]);
+          } else if (payload.eventType === 'UPDATE') {
+            setMediaData((prev) =>
+              prev.map((item) =>
+                item.id === payload.new.id ? payload.new : item,
+              ),
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setMediaData((prev) =>
+              prev.filter((item) => item.id !== payload.old.id),
+            );
+          }
         },
       )
       .subscribe();
 
-    // Cleanup subscription on unmount
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [user?.id]);
+  }, [fetchMedia, user?.id]);
 
   console.log('error', error);
   console.log('data', mediaData);
@@ -352,10 +410,7 @@ const Home = () => {
                 <ModelViewer glbUrl={proxyUrl} />
                 <div className="mx-auto mt-auto w-max rounded-xl bg-purple-gradient p-[1px]">
                   <div className="group w-full rounded-xl bg-[#060405] px-4 py-2 text-center text-white hover:bg-purple-gradient hover:text-black">
-                    <a
-                      href={modelDetails?.model_urls?.glb}
-                      className="flex items-center gap-2"
-                    >
+                    <a href={proxyUrl} className="flex items-center gap-2">
                       {/* Default SVG */}
                       <img
                         src={download}
@@ -380,6 +435,7 @@ const Home = () => {
 
         <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
           {/* <ModelsStored /> */}
+          <p>Your 3D Models</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {mediaData?.map((data) => (
               <div
