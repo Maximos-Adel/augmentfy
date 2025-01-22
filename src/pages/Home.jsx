@@ -24,7 +24,7 @@ const Home = () => {
   const [errorGenerating, setErrorGenerating] = useState(null);
 
   const [user, setUser] = useState(null);
-  const [proxyUrl, setProxyUrl] = useState(modelDetails?.model_urls?.glb || ''); // Default to the first item's URL
+  const [proxyUrl, setProxyUrl] = useState(''); // Default to the first item's URL
   console.log('proxy', proxyUrl);
 
   useEffect(() => {
@@ -111,6 +111,7 @@ const Home = () => {
 
           if (data.status === 'SUCCEEDED') {
             setModelDetails(data);
+            setProxyUrl(data?.model_urls?.glb);
 
             // supabase insertion
             await supabase.from('media').insert({
@@ -156,26 +157,74 @@ const Home = () => {
   // let take = limit ?? 10;
   // let offest = (page - 1 || 1) * take;
 
-  useEffect(() => {
-    const fetchMedia = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('media')
-          .select('*')
-          .eq('user_id', user?.id);
-        // .range(offest - 1, take - 1);
-        if (error) {
-          setError(error.message); // Handle the error
-        } else {
-          setMediaData(data); // Set the data to state
-        }
-      } catch (err) {
-        setError(`"An unexpected error occurred" ${err}`); // Handle unexpected errors
-      }
-    };
+  // useEffect(() => {
+  //   const fetchMedia = async () => {
+  //     try {
+  //       const { data, error } = await supabase
+  //         .from('media')
+  //         .select('*')
+  //         .eq('user_id', user?.id);
+  //       // .range(offest - 1, take - 1);
+  //       if (error) {
+  //         setError(error.message); // Handle the error
+  //       } else {
+  //         setMediaData(data); // Set the data to state
+  //       }
+  //     } catch (err) {
+  //       setError(`"An unexpected error occurred" ${err}`); // Handle unexpected errors
+  //     }
+  //   };
 
-    fetchMedia(); // Call the async function
-  }, [user?.id]); // Empty dependency array ensures it runs only once on mount
+  //   fetchMedia(); // Call the async function
+  // }, [user?.id]);
+
+  // Function to fetch media from the database
+  const fetchMedia = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('media')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      if (error) {
+        setError(error.message); // Handle the error
+      } else {
+        setMediaData(data); // Set the data to state
+      }
+    } catch (err) {
+      setError(`"An unexpected error occurred" ${err}`); // Handle unexpected errors
+    }
+  };
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Fetch media initially when the component mounts
+    fetchMedia();
+
+    // Set up real-time subscription
+    const subscription = supabase
+      .channel('media-changes') // A unique name for your subscription
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+          schema: 'public', // Replace with your schema name if different
+          table: 'media',
+          filter: `user_id=eq.${user.id}`, // Filter events for this user
+        },
+        (payload) => {
+          console.log('Database change detected:', payload);
+          fetchMedia(); // Refetch data on database changes
+        },
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [user?.id]);
 
   console.log('error', error);
   console.log('data', mediaData);
