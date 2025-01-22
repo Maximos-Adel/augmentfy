@@ -226,29 +226,41 @@ const Home = () => {
   //     supabase.removeChannel(subscription);
   //   };
   // }, [user?.id]);
+  const [page, setPage] = useState(1);
+  const pageSize = 10; // Number of items per page
+  const [totalItems, setTotalItems] = useState(0);
 
-  const fetchMedia = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('media')
-        .select('*')
-        .eq('user_id', user?.id);
+  const fetchMedia = useCallback(
+    async (page) => {
+      try {
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize - 1;
 
-      if (error) {
-        setError(error.message); // Handle the error
-      } else {
-        setMediaData(data); // Set the data to state
+        // Fetch paginated media
+        const { data, error, count } = await supabase
+          .from('media')
+          .select('*', { count: 'exact' }) // Fetch count of total rows
+          .eq('user_id', user?.id)
+          .range(start, end);
+
+        if (error) {
+          setError(error.message);
+        } else {
+          setMediaData(data);
+          setTotalItems(count); // Update total rows count
+        }
+      } catch (err) {
+        setError(`An unexpected error occurred: ${err.message}`);
       }
-    } catch (err) {
-      setError(`An unexpected error occurred: ${err}`); // Handle unexpected errors
-    }
-  }, [user?.id]);
+    },
+    [user?.id, pageSize],
+  );
 
   useEffect(() => {
     if (!user?.id) return;
 
     // Fetch media initially
-    fetchMedia();
+    fetchMedia(page);
 
     // Set up real-time subscription
     const subscription = supabase
@@ -282,7 +294,18 @@ const Home = () => {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [fetchMedia, user?.id]);
+  }, [fetchMedia, user?.id, page]);
+
+  // Pagination Controls
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handleNextPage = () => {
+    if (page < totalPages) setPage((prev) => prev + 1);
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) setPage((prev) => prev - 1);
+  };
 
   console.log('error', error);
   console.log('data', mediaData);
@@ -405,9 +428,8 @@ const Home = () => {
         <div className="flex h-full w-2/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
           <div className="h-full rounded-xl bg-purple-gradient p-[1px]">
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
-              {/* {modelDetails && modelDetails?.status === 'SUCCEEDED' && ( */}
-              <>
-                <ModelViewer glbUrl={proxyUrl} />
+              <ModelViewer glbUrl={proxyUrl} />
+              {proxyUrl && (
                 <div className="mx-auto mt-auto w-max rounded-xl bg-purple-gradient p-[1px]">
                   <div className="group w-full rounded-xl bg-[#060405] px-4 py-2 text-center text-white hover:bg-purple-gradient hover:text-black">
                     <a href={proxyUrl} className="flex items-center gap-2">
@@ -427,8 +449,7 @@ const Home = () => {
                     </a>
                   </div>
                 </div>
-              </>
-              {/* )} */}
+              )}
             </div>
           </div>
         </div>
@@ -450,6 +471,25 @@ const Home = () => {
                 />
               </div>
             ))}
+          </div>
+          <div className="mt-auto flex w-full justify-between gap-4">
+            <button
+              onClick={handlePreviousPage}
+              disabled={page === 1}
+              className="rounded-lg bg-background-header p-2 px-4"
+            >
+              Previous
+            </button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={page === totalPages}
+              className="rounded-lg bg-background-header p-2 px-4"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>

@@ -35,7 +35,7 @@ const Registration = () => {
         const createdUser = await supabase.from('users').insert({ id, email });
         console.log('creat', createdUser);
         console.log('User signed up:', data.user);
-        navigate('/');
+        navigate('/app');
       }
     } catch (error) {
       console.error('Unexpected error:', error);
