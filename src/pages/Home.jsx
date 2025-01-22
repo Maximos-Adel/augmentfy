@@ -474,7 +474,7 @@ const Home = () => {
               </div>
             ))}
           </div>
-          <div className="mt-auto flex w-full justify-between gap-4">
+          <div className="mt-auto flex w-full items-center justify-between gap-4">
             <button
               onClick={handlePreviousPage}
               disabled={page === 1}
