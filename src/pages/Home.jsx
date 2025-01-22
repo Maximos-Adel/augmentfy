@@ -227,7 +227,7 @@ const Home = () => {
   //   };
   // }, [user?.id]);
   const [page, setPage] = useState(1);
-  const pageSize = 10; // Number of items per page
+  const pageSize = 8; // Number of items per page
   const [totalItems, setTotalItems] = useState(0);
 
   const fetchMedia = useCallback(
