@@ -1,5 +1,6 @@
 const ModelViewer = ({ glbUrl }) => {
   const proxyUrl = `/api/glb-proxy?url=${encodeURIComponent(glbUrl)}`;
+  const modelSrc = glbUrl.includes('meshy') ? proxyUrl : glbUrl;
 
   console.log('glbUrl', glbUrl);
   console.log('proxyUrl', proxyUrl);
@@ -8,7 +9,7 @@ const ModelViewer = ({ glbUrl }) => {
     <div>
       <model-viewer
         alt="3D Model"
-        src={glbUrl} // Ensure glbUrl contains the full absolute URL
+        src={modelSrc}
         ar
         auto-rotate
         crossorigin="anonymous"

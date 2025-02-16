@@ -347,9 +347,9 @@ const Home = () => {
             />
           </div>
           <p className="mt-4 text-sm font-medium text-gray-300">Image</p>
-          <div className="relative mb-4 flex items-center justify-between gap-2 rounded-md bg-[#141416] py-2 text-sm text-white">
+          <div className="relative mb-4 flex items-center justify-between gap-2 rounded-lg bg-[#141416] py-3 text-sm text-white">
             <div
-              className="absolute left-0 top-0 h-full rounded-md bg-gray-500 transition-transform duration-300"
+              className="absolute left-0 top-0 h-full rounded-lg bg-[#252527] transition-transform duration-300"
               style={{
                 width: `${100 / tabs.length}%`,
                 transform: `translateX(${tabs.findIndex((tab) => tab.id === select) * 100}%)`,
@@ -359,7 +359,7 @@ const Home = () => {
               <div
                 key={tab.id}
                 onClick={() => setSelect(tab.id)}
-                className="relative z-10 flex-1 cursor-pointer rounded-md text-center text-white"
+                className="relative z-10 flex-1 cursor-pointer rounded-lg text-center text-white"
               >
                 {tab.name}
               </div>
@@ -371,7 +371,7 @@ const Home = () => {
         <div className="flex h-full w-2/4 flex-col gap-2 bg-[#060405] text-gray-200">
           <div className="h-full rounded-xl bg-purple-gradient p-[1px]">
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
-              <ModelViewer glbUrl={downloadUrl.glb} />
+              <ModelViewer glbUrl={downloadUrl.glb || proxyUrl} />
               {downloadUrl && (
                 <div className="relative mt-auto flex w-full items-stretch justify-end gap-2 rounded-lg bg-[#141416] p-2 text-xs">
                   <button className="flex items-center rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]">
@@ -477,28 +477,6 @@ const Home = () => {
           {/* <ModelsStored /> */}
           <p>Your 3D Models</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            {/* {mediaData?.map((data) => (
-              <div
-                className="relative h-28 w-28 cursor-pointer overflow-hidden rounded-lg bg-purple-gradient p-[1px]"
-                key={data.id} // Fallback key if id is missing
-                onClick={() => setProxyUrl(data.meta_data.glb)}
-              >
-                <img
-                  src={data.thumbnail}
-                  alt="Model Thumbnail"
-                  className="h-full w-full rounded-lg bg-[#060405] object-contain p-2"
-                />
-
-                <button
-                  className="absolute bottom-0 flex w-full items-center gap-1 bg-[#252527] p-1 px-2 text-xs hover:bg-[#1c1c1f]"
-                  onClick={() => deleteMedia(data.id)}
-                >
-                  <img src={trash} alt="trash" className="w-4" />
-                  <p>Delete</p>
-                </button>
-              </div>
-            ))} */}
-
             {mediaData?.map((data) => (
               <div
                 className="group relative h-28 w-28 cursor-pointer overflow-hidden rounded-lg bg-purple-gradient p-[1px]"
