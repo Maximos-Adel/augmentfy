@@ -97,8 +97,8 @@ const Home = () => {
     const file = e.target.files[0];
 
     if (file && file.name.toLowerCase().endsWith('.glb')) {
-      const objectUrl = URL.createObjectURL(file); // Convert to Object URL
-      setProxyUrl(objectUrl); // Store URL for preview
+      const objectUrl = URL.createObjectURL(file); // Convert file to Blob URL
+      setProxyUrl(objectUrl);
       console.log('Uploaded GLB URL:', objectUrl);
     } else {
       alert('Please upload a valid .glb file');

@@ -8,7 +8,7 @@ const ModelViewer = ({ glbUrl }) => {
     <div>
       <model-viewer
         alt="3D Model"
-        src={proxyUrl} // Ensure glbUrl contains the full absolute URL
+        src={glbUrl} // Ensure glbUrl contains the full absolute URL
         ar
         auto-rotate
         crossorigin="anonymous"
