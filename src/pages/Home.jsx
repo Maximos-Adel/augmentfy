@@ -1,15 +1,18 @@
 import axios from 'axios';
 import ModelViewer from '../components/ModelViewer';
-import upload from '../assets/upload.svg';
+
 import Header from '../components/Header';
-import stars from '../assets/stars.svg';
+
 import cubic from '../assets/cubic.svg';
 import x from '../assets/x.svg';
-import logo from '../assets/logo.png';
+
 import download from '../assets/download.svg';
 import downloadBlack from '../assets/download-black.svg';
 import { useState, useCallback, useEffect } from 'react';
 import supabase from '../supabase';
+import ImageTo3D from '../components/ImageTo3D';
+import Upload3D from '../components/Upload3D';
+import UploadVideo from '../components/UploadVideo';
 // import ModelsStored from '../components/ModelsStored';
 
 const Home = () => {
@@ -90,6 +93,19 @@ const Home = () => {
     }
   };
 
+  const [glbFile, setGlbFile] = useState(null);
+
+  const handleGlbUpload = (e) => {
+    const file = e.target.files[0];
+
+    if (file && file.name.toLowerCase().endsWith('.glb')) {
+      setGlbFile(file); // Save the file object in state
+      console.log('Uploaded GLB file:', file);
+    } else {
+      alert('Please upload a valid .glb file');
+    }
+  };
+
   const pollTaskStatus = async (taskId) => {
     const headers = {
       Authorization: `Bearer msy_vIzERkacegAOdOxeRcE7TpEY2E8HnWa6NESx`,
@@ -151,81 +167,10 @@ const Home = () => {
     setGenerateLoading(true);
     pollTaskStatus(modelId); // Start polling for task status
   };
+
   const [mediaData, setMediaData] = useState([]);
   const [error, setError] = useState(null);
 
-  // let limit;
-  // let take = limit ?? 10;
-  // let offest = (page - 1 || 1) * take;
-
-  // useEffect(() => {
-  //   const fetchMedia = async () => {
-  //     try {
-  //       const { data, error } = await supabase
-  //         .from('media')
-  //         .select('*')
-  //         .eq('user_id', user?.id);
-  //       // .range(offest - 1, take - 1);
-  //       if (error) {
-  //         setError(error.message); // Handle the error
-  //       } else {
-  //         setMediaData(data); // Set the data to state
-  //       }
-  //     } catch (err) {
-  //       setError(`"An unexpected error occurred" ${err}`); // Handle unexpected errors
-  //     }
-  //   };
-
-  //   fetchMedia(); // Call the async function
-  // }, [user?.id]);
-
-  // Function to fetch media from the database
-  // const fetchMedia = async () => {
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from('media')
-  //       .select('*')
-  //       .eq('user_id', user?.id);
-
-  //     if (error) {
-  //       setError(error.message); // Handle the error
-  //     } else {
-  //       setMediaData(data); // Set the data to state
-  //     }
-  //   } catch (err) {
-  //     setError(`"An unexpected error occurred" ${err}`); // Handle unexpected errors
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   if (!user?.id) return;
-
-  //   // Fetch media initially when the component mounts
-  //   fetchMedia();
-
-  //   // Set up real-time subscription
-  //   const subscription = supabase
-  //     .channel('media-changes') // A unique name for your subscription
-  //     .on(
-  //       'postgres_changes',
-  //       {
-  //         event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
-  //         schema: 'public', // Replace with your schema name if different
-  //         table: 'media',
-  //         filter: `user_id=eq.${user.id}`, // Filter events for this user
-  //       },
-  //       (payload) => {
-  //         console.log('Database change detected:', payload);
-  //         fetchMedia(); // Refetch data on database changes
-  //       },
-  //     )
-  //     .subscribe();
-
-  //   // Cleanup subscription on unmount
-  //   return () => {
-  //     supabase.removeChannel(subscription);
-  //   };
-  // }, [user?.id]);
   const [page, setPage] = useState(1);
   const pageSize = 8; // Number of items per page
   const [totalItems, setTotalItems] = useState(0);
@@ -312,11 +257,64 @@ const Home = () => {
   console.log('error', error);
   console.log('data', mediaData);
 
+  const tabs = [
+    {
+      id: 1,
+      name: 'Image to 3D',
+    },
+    {
+      id: 2,
+      name: 'Upload 3D File',
+    },
+    {
+      id: 3,
+      name: 'Upload Video',
+    },
+  ];
+  const [select, setSelect] = useState(1);
+  const renderStep = () => {
+    switch (select) {
+      case 1:
+        return (
+          <ImageTo3D
+            imageUrl={imageUrl}
+            loading={loading}
+            handleImageUploadAndConvertTo3D={handleImageUploadAndConvertTo3D}
+            errorUploading={errorUploading}
+            fileData={fileData}
+            handleFetchDetails={handleFetchDetails}
+            generateLoading={generateLoading}
+            progress={progress}
+            errorGenerating={errorGenerating}
+          />
+        );
+      case 2:
+        return (
+          <Upload3D
+            imageUrl={imageUrl}
+            loading={loading}
+            handleImageUploadAndConvertTo3D={handleImageUploadAndConvertTo3D}
+            errorUploading={errorUploading}
+            fileData={fileData}
+            handleFetchDetails={handleFetchDetails}
+            generateLoading={generateLoading}
+            progress={progress}
+            errorGenerating={errorGenerating}
+          />
+        );
+      case 3:
+        return <UploadVideo />;
+
+      default:
+        return <div>Unknown step</div>;
+    }
+  };
+
   return (
     <div className="flex h-screen w-full flex-col">
       <Header />
-      <div className="flex h-full items-center bg-[#060405] py-4 text-white">
-        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-400">
+      <div className="flex h-full items-center gap-8 bg-[#060405] p-8 text-white">
+        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] text-gray-400">
           <div className="mb-1 flex items-center justify-between">
             <div className="flex items-center gap-2 text-gray-300">
               <img src={cubic} alt="" className="w-6" />
@@ -329,105 +327,29 @@ const Home = () => {
             />
           </div>
           <p className="mt-4 text-sm font-medium text-gray-300">Image</p>
-
-          <div className="flex h-72 w-full flex-col items-center justify-center overflow-hidden rounded-md border border-dashed border-gray-800 p-4">
-            {!imageUrl && !loading && (
-              <label
-                htmlFor="file-input"
-                className="flex w-full cursor-pointer flex-col items-center"
+          <div className="relative mb-4 flex items-center justify-between gap-2 rounded-md bg-[#141416] py-2 text-sm text-white">
+            <div
+              className="absolute left-0 top-0 h-full rounded-md bg-gray-500 transition-transform duration-300"
+              style={{
+                width: `${100 / tabs.length}%`,
+                transform: `translateX(${tabs.findIndex((tab) => tab.id === select) * 100}%)`,
+              }}
+            ></div>
+            {tabs?.map((tab) => (
+              <div
+                key={tab.id}
+                onClick={() => setSelect(tab.id)}
+                className="relative z-10 flex-1 cursor-pointer rounded-md text-center text-white"
               >
-                <div className="flex flex-col items-center justify-center space-y-1 text-center">
-                  <img className="h-12 w-12" src={upload} alt="upload" />
-                  <p className="font-medium text-gray-300">Click to upload</p>
-                  <p className="text-sm text-[#4B4B4B]">
-                    Supported formats: .png, .jpg, .jpeg, .webp
-                  </p>
-                  <p className="text-sm text-[#4B4B4B]">Max size: 20MB</p>
-                </div>
-              </label>
-            )}
-
-            {loading && (
-              <div className="flex flex-col items-center">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-500 border-t-transparent"></div>
-                <p className="mt-2 text-gray-600">Uploading...</p>
+                {tab.name}
               </div>
-            )}
-
-            {imageUrl && !loading && (
-              <>
-                <img
-                  src={imageUrl}
-                  alt="Uploaded Preview"
-                  className="h-full w-full object-contain"
-                />
-              </>
-            )}
-            <input
-              id="file-input"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageUploadAndConvertTo3D}
-            />
+            ))}
           </div>
+          <input type="file" accept=".glb" onChange={handleGlbUpload} />
 
-          {errorUploading && (
-            <p className="text-sm text-red-400">{errorUploading}</p>
-          )}
-
-          <p className="mt-4 text-sm font-medium text-gray-300">Name with AI</p>
-          <textarea
-            className="h-40 w-full resize-none rounded-lg bg-[#111111] p-3 outline-none placeholder:text-[#363636]"
-            placeholder="Give your generation a name"
-            value={fileData?.fileName}
-          />
-          <div className="mt-2 flex items-start justify-center gap-2 text-sm text-gray-300">
-            <p>1 min</p>
-            <img src={logo} className="w-8" />
-            <p>-10</p>
-          </div>
-          <button
-            className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-purple-gradient p-2 py-3 text-lg font-medium text-black disabled:cursor-not-allowed"
-            onClick={handleFetchDetails}
-            disabled={generateLoading}
-          >
-            <img src={stars} className="w-6" />
-            {generateLoading ? 'Generating ... ' : 'Generate 3D Model'}
-          </button>
-          {generateLoading && (
-            <div className="mt-2">
-              <p className="text-sm font-medium text-gray-300">
-                Processing your model ... Please wait.
-              </p>
-              <div className="mt-1 flex w-[95%] items-center gap-2">
-                <div
-                  className="progress-container"
-                  style={{
-                    width: '100%',
-                    background: '#D1D5DB',
-                    borderRadius: '4px',
-                  }}
-                >
-                  <div
-                    className="progress-bar bg-purple-gradient"
-                    style={{
-                      width: `${progress}%`,
-                      height: '10px',
-                      borderRadius: '4px',
-                      transition: 'width 0.5s ease',
-                    }}
-                  ></div>
-                </div>
-                <p>{progress}%</p>
-              </div>
-            </div>
-          )}
-          {errorGenerating && (
-            <p className="text-sm text-red-400">{errorGenerating}</p>
-          )}
+          {renderStep()}
         </div>
-        <div className="flex h-full w-2/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
+        <div className="flex h-full w-2/4 flex-col gap-2 bg-[#060405] text-gray-200">
           <div className="h-full rounded-xl bg-purple-gradient p-[1px]">
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
               <ModelViewer glbUrl={proxyUrl} />
@@ -456,13 +378,13 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] px-8 py-4 text-gray-200">
+        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] text-gray-200">
           {/* <ModelsStored /> */}
           <p>Your 3D Models</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {mediaData?.map((data) => (
               <div
-                className="h-36 w-36 cursor-pointer rounded-lg bg-purple-gradient p-[1px]"
+                className="h-28 w-28 cursor-pointer rounded-lg bg-purple-gradient p-[1px]"
                 key={data.thumbnail} // Fallback key if id is missing
                 onClick={() => setProxyUrl(data.meta_data.glb)}
               >
