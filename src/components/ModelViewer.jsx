@@ -1,6 +1,6 @@
 const ModelViewer = ({ glbUrl }) => {
   const proxyUrl = `/api/glb-proxy?url=${encodeURIComponent(glbUrl)}`;
-  const modelSrc = glbUrl.includes('meshy') ? proxyUrl : glbUrl;
+  const modelSrc = glbUrl?.includes('meshy') ? proxyUrl : glbUrl;
 
   console.log('glbUrl', glbUrl);
   console.log('proxyUrl', proxyUrl);

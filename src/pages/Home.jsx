@@ -23,7 +23,7 @@ const Home = () => {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [progress, setProgress] = useState();
   const [modelId, setModelId] = useState('');
-  const [modelDetails, setModelDetails] = useState(null);
+  // const [modelDetails, setModelDetails] = useState(null);
   const [errorUploading, setErrorUploading] = useState(null);
   const [errorGenerating, setErrorGenerating] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState({
@@ -35,8 +35,8 @@ const Home = () => {
 
   const [user, setUser] = useState(null);
   const [proxyUrl, setProxyUrl] = useState(''); // Default to the first item's URL
-  console.log('proxy', proxyUrl);
-  console.log('modelDetails', modelDetails);
+  // console.log('proxy', proxyUrl);
+  // // console.log('modelDetails', modelDetails);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -105,7 +105,12 @@ const Home = () => {
 
     if (file && file.name.toLowerCase().endsWith('.glb')) {
       const objectUrl = URL.createObjectURL(file); // Convert file to Blob URL
+
+      // Reset downloadUrl and set proxyUrl
+      setDownloadUrl({ fbx: '', glb: '', obj: '', usdz: '' });
       setProxyUrl(objectUrl);
+
+      console.log('Reset downloadUrl:', downloadUrl);
       console.log('Uploaded GLB URL:', objectUrl);
     } else {
       alert('Please upload a valid .glb file');
@@ -133,9 +138,9 @@ const Home = () => {
           console.log('Polling Response:', data);
 
           if (data.status === 'SUCCEEDED') {
-            setModelDetails(data);
+            // setModelDetails(data);
             setDownloadUrl(data.model_urls);
-            setProxyUrl(data?.model_urls?.glb);
+            // setProxyUrl(data?.model_urls?.glb);
 
             // supabase insertion
             await supabase.from('media').insert({
@@ -382,7 +387,7 @@ const Home = () => {
                   </button>
                   {/* <button
                     className="flex items-center gap-1 rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]"
-                    onClick={() => deleteMedia(modelDetails.id)}
+                    // onClick={() => deleteMedia(modelDetails.id)}
                   >
                     <img src={trash} alt="trash" className="w-4" />
                     <p>Delete</p>
@@ -481,7 +486,7 @@ const Home = () => {
               <div
                 className="group relative h-28 w-28 cursor-pointer overflow-hidden rounded-lg bg-purple-gradient p-[1px]"
                 key={data.id}
-                onClick={() => setProxyUrl(data.meta_data.glb)}
+                onClick={() => setDownloadUrl(data.meta_data)}
               >
                 <img
                   src={data.thumbnail}
