@@ -372,7 +372,7 @@ const Home = () => {
           <div className="h-full rounded-xl bg-purple-gradient p-[1px]">
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
               <ModelViewer glbUrl={downloadUrl.glb || proxyUrl} />
-              {downloadUrl && (
+              {downloadUrl.glb && (
                 <div className="relative mt-auto flex w-full items-stretch justify-end gap-2 rounded-lg bg-[#141416] p-2 text-xs">
                   <button className="flex items-center rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]">
                     Get Pro
