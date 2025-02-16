@@ -299,6 +299,7 @@ const Home = () => {
             generateLoading={generateLoading}
             progress={progress}
             errorGenerating={errorGenerating}
+            handleGlbUpload={handleGlbUpload}
           />
         );
       case 3:
@@ -344,7 +345,6 @@ const Home = () => {
               </div>
             ))}
           </div>
-          <input type="file" accept=".glb" onChange={handleGlbUpload} />
 
           {renderStep()}
         </div>
