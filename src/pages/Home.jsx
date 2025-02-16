@@ -93,8 +93,6 @@ const Home = () => {
     }
   };
 
-  const [glbFile, setGlbFile] = useState(null);
-
   const handleGlbUpload = (e) => {
     const file = e.target.files[0];
 
