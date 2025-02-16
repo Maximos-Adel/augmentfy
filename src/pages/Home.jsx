@@ -13,6 +13,7 @@ import supabase from '../supabase';
 import ImageTo3D from '../components/ImageTo3D';
 import Upload3D from '../components/Upload3D';
 import UploadVideo from '../components/UploadVideo';
+import trash from '../assets/trash.svg';
 // import ModelsStored from '../components/ModelsStored';
 
 const Home = () => {
@@ -25,6 +26,12 @@ const Home = () => {
   const [modelDetails, setModelDetails] = useState(null);
   const [errorUploading, setErrorUploading] = useState(null);
   const [errorGenerating, setErrorGenerating] = useState(null);
+  const [downloadUrl, setDownloadUrl] = useState({
+    fbx: '',
+    glb: '',
+    obj: '',
+    usdz: '',
+  });
 
   const [user, setUser] = useState(null);
   const [proxyUrl, setProxyUrl] = useState(''); // Default to the first item's URL
@@ -127,6 +134,7 @@ const Home = () => {
 
           if (data.status === 'SUCCEEDED') {
             setModelDetails(data);
+            setDownloadUrl(data.model_urls);
             setProxyUrl(data?.model_urls?.glb);
 
             // supabase insertion
@@ -310,6 +318,18 @@ const Home = () => {
     }
   };
 
+  const [isOpen, setIsOpen] = useState(false);
+
+  const deleteMedia = async (id) => {
+    const { error } = await supabase.from('media').delete().eq('id', id);
+
+    if (error) {
+      console.error('Error deleting media:', error.message);
+    } else {
+      setMediaData((prev) => prev.filter((item) => item.id !== id));
+    }
+  };
+
   return (
     <div className="flex h-screen w-full flex-col">
       <Header />
@@ -351,26 +371,102 @@ const Home = () => {
         <div className="flex h-full w-2/4 flex-col gap-2 bg-[#060405] text-gray-200">
           <div className="h-full rounded-xl bg-purple-gradient p-[1px]">
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
-              <ModelViewer glbUrl={proxyUrl} />
-              {proxyUrl && (
-                <div className="mx-auto mt-auto w-max rounded-xl bg-purple-gradient p-[1px]">
-                  <div className="group w-full rounded-xl bg-[#060405] px-4 py-2 text-center text-white hover:bg-purple-gradient hover:text-black">
-                    <a href={proxyUrl} className="flex items-center gap-2">
-                      {/* Default SVG */}
-                      <img
-                        src={download}
-                        className="w-5 group-hover:hidden"
-                        alt="Download Icon"
-                      />
-                      {/* Hover SVG */}
-                      <img
-                        src={downloadBlack} // Replace with your hover SVG
-                        className="hidden w-5 group-hover:block"
-                        alt="Download Icon on Hover"
-                      />
-                      Download 3D Model
-                    </a>
+              <ModelViewer glbUrl={downloadUrl.glb} />
+              {downloadUrl && (
+                <div className="relative mt-auto flex w-full items-stretch justify-end gap-2 rounded-lg bg-[#141416] p-2 text-xs">
+                  <button className="flex items-center rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]">
+                    Get Pro
+                  </button>
+                  <button className="flex items-center rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]">
+                    Embded
+                  </button>
+                  {/* <button
+                    className="flex items-center gap-1 rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]"
+                    onClick={() => deleteMedia(modelDetails.id)}
+                  >
+                    <img src={trash} alt="trash" className="w-4" />
+                    <p>Delete</p>
+                  </button> */}
+                  <div className="w-max rounded-lg bg-purple-gradient p-[1px]">
+                    <div className="group w-max rounded-lg bg-[#060405] p-2 text-center text-xs text-white hover:bg-purple-gradient hover:text-black">
+                      <button
+                        // href={downloadUrl.glb}
+                        className="flex items-center gap-1"
+                        onClick={() => setIsOpen(!isOpen)}
+                      >
+                        {/* Default SVG */}
+                        <img
+                          src={download}
+                          className="w-4 group-hover:hidden"
+                          alt="Download Icon"
+                        />
+                        {/* Hover SVG */}
+                        <img
+                          src={downloadBlack} // Replace with your hover SVG
+                          className="hidden w-4 group-hover:block"
+                          alt="Download Icon on Hover"
+                        />
+                        Download
+                      </button>
+                    </div>
                   </div>
+                  {isOpen && (
+                    <div className="absolute bottom-full right-0 mb-2 flex flex-col gap-3 rounded-lg bg-[#141416] p-4">
+                      <p className="font-semibold">Download Settings</p>
+                      <div className="flex items-stretch gap-4">
+                        <a
+                          href={downloadUrl.glb}
+                          className="cursor-pointer rounded-lg border border-[#3f3f44] p-4 text-center hover:bg-[#1c1c1f]"
+                        >
+                          <p className="my-4 text-2xl font-semibold text-[#6E32A5]">
+                            GLB
+                          </p>
+                          <p>Best for E-commerce and web</p>
+                        </a>
+                        <a
+                          href={downloadUrl.usdz}
+                          className="cursor-pointer rounded-lg border border-[#3f3f44] p-4 text-center hover:bg-[#1c1c1f]"
+                        >
+                          <p className="my-4 text-2xl font-semibold text-[#6E32A5]">
+                            USDZ
+                          </p>
+                          <p>Best for Ar View on Ios Device</p>
+                        </a>
+                      </div>
+                      <div>
+                        <p className="my-2 font-semibold">Format</p>
+                        <div className="flex w-full items-center gap-1 text-gray-400">
+                          <a
+                            href={downloadUrl.fbx}
+                            className="cursor-pointer rounded-lg px-5 py-2 hover:bg-[#252527]"
+                          >
+                            fbx
+                          </a>
+                          |
+                          <a
+                            href={downloadUrl.glb}
+                            className="cursor-pointer rounded-lg px-5 py-2 hover:bg-[#252527]"
+                          >
+                            glb
+                          </a>
+                          |
+                          <a
+                            href={downloadUrl.obj}
+                            className="cursor-pointer rounded-lg px-5 py-2 hover:bg-[#252527]"
+                          >
+                            obj
+                          </a>
+                          |
+                          <a
+                            href={downloadUrl.usdz}
+                            className="cursor-pointer rounded-lg px-5 py-2 hover:bg-[#252527]"
+                          >
+                            usdz
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -381,10 +477,10 @@ const Home = () => {
           {/* <ModelsStored /> */}
           <p>Your 3D Models</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            {mediaData?.map((data) => (
+            {/* {mediaData?.map((data) => (
               <div
-                className="h-28 w-28 cursor-pointer rounded-lg bg-purple-gradient p-[1px]"
-                key={data.thumbnail} // Fallback key if id is missing
+                className="relative h-28 w-28 cursor-pointer overflow-hidden rounded-lg bg-purple-gradient p-[1px]"
+                key={data.id} // Fallback key if id is missing
                 onClick={() => setProxyUrl(data.meta_data.glb)}
               >
                 <img
@@ -392,6 +488,40 @@ const Home = () => {
                   alt="Model Thumbnail"
                   className="h-full w-full rounded-lg bg-[#060405] object-contain p-2"
                 />
+
+                <button
+                  className="absolute bottom-0 flex w-full items-center gap-1 bg-[#252527] p-1 px-2 text-xs hover:bg-[#1c1c1f]"
+                  onClick={() => deleteMedia(data.id)}
+                >
+                  <img src={trash} alt="trash" className="w-4" />
+                  <p>Delete</p>
+                </button>
+              </div>
+            ))} */}
+
+            {mediaData?.map((data) => (
+              <div
+                className="group relative h-28 w-28 cursor-pointer overflow-hidden rounded-lg bg-purple-gradient p-[1px]"
+                key={data.id}
+                onClick={() => setProxyUrl(data.meta_data.glb)}
+              >
+                <img
+                  src={data.thumbnail}
+                  alt="Model Thumbnail"
+                  className="h-full w-full rounded-lg bg-[#060405] object-contain p-2"
+                />
+
+                {/* Delete Button with Hover Animation */}
+                <button
+                  className="absolute bottom-0 flex w-full translate-y-2 items-center gap-1 rounded-lg rounded-t-none bg-[#252527] p-1 px-2 text-xs opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent parent click
+                    deleteMedia(data.id);
+                  }}
+                >
+                  <img src={trash} alt="trash" className="w-4" />
+                  <p>Delete</p>
+                </button>
               </div>
             ))}
           </div>
