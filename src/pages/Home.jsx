@@ -228,7 +228,7 @@ const Home = () => {
           />
         );
       case 2:
-        return <Upload3D />;
+        return <Upload3D setProxyUrl={setProxyUrl} />;
       case 3:
         return <UploadVideo />;
 
@@ -242,7 +242,7 @@ const Home = () => {
       case 1:
         return <UploadedImage setDownloadUrl={setDownloadUrl} />;
       case 2:
-        return <UploadedModel setDownloadUrl={setDownloadUrl} />;
+        return <UploadedModel setProxyUrl={setProxyUrl} />;
       case 3:
         return <UploadedVideo />;
 

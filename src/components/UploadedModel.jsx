@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import supabase from '../supabase';
 import trash from '../assets/trash.svg';
 
-const UploadedModel = ({ setDownloadUrl }) => {
+const UploadedModel = ({ setProxyUrl }) => {
   const [mediaData, setMediaData] = useState([]);
   const [error, setError] = useState(null);
 
@@ -124,13 +124,13 @@ const UploadedModel = ({ setDownloadUrl }) => {
   return (
     <>
       <div className="mt-4 flex flex-wrap gap-2">
-        {mediaData?.map((data) => (
-          <ul
-            className="flex h-28 w-28 w-full cursor-pointer flex-col rounded-lg p-[1px]"
-            key={data.id}
-            onClick={() => setDownloadUrl(data.meta_data)}
-          >
-            <li className="flex items-center justify-between">
+        <ul className="flex w-full cursor-pointer flex-col gap-2 rounded-lg p-[1px]">
+          {mediaData?.map((data) => (
+            <li
+              className="flex items-center justify-between"
+              key={data.id}
+              onClick={() => setProxyUrl(data?.thumbnail)}
+            >
               <p>{data.name}</p>
               <button
                 className="flex translate-y-2 items-center gap-1 rounded-lg bg-[#252527] p-1 px-2 text-xs"
@@ -143,8 +143,8 @@ const UploadedModel = ({ setDownloadUrl }) => {
                 <p>Delete</p>
               </button>
             </li>
-          </ul>
-        ))}
+          ))}
+        </ul>
       </div>
       <div className="mt-auto flex w-full items-center justify-between gap-4">
         <button

@@ -3,7 +3,7 @@ import upload from '../assets/upload.svg';
 import { useState, useEffect } from 'react';
 import supabase from '../supabase';
 
-const Upload3D = () => {
+const Upload3D = ({ setProxyUrl }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -24,6 +24,8 @@ const Upload3D = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]; // Get the selected file
+    const objectUrl = URL.createObjectURL(file);
+    setProxyUrl(objectUrl);
     setFileData({
       fileName: file.name,
       fileSize: file.size,
