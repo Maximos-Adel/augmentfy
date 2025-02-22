@@ -20,21 +20,28 @@ const Registration = () => {
         email,
         password,
       });
+
       if (error) {
         console.error('Error signing up:', error.message);
         setError(error.message);
-      } else {
-        const {
-          user: { id, email },
-        } = data;
-        console.log('//////////////');
-        console.log(id, email);
-        console.log('//////////////');
-        const test = await supabase.from('users').select();
-        console.log(test);
-        const createdUser = await supabase.from('users').insert({ id, email });
-        console.log('creat', createdUser);
+      } else if (data.user) {
         console.log('User signed up:', data.user);
+
+        // ✅ Insert user data into the "users" table
+        const { error: insertError } = await supabase.from('users').insert([
+          {
+            id: data.user.id, // Store the auth user ID
+            email: data.user.email,
+            created_at: new Date(),
+          },
+        ]);
+
+        if (insertError) {
+          console.error('Error saving user to database:', insertError.message);
+        } else {
+          console.log('User saved in database');
+        }
+
         navigate('/app');
       }
     } catch (error) {

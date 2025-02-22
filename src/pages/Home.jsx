@@ -8,13 +8,14 @@ import x from '../assets/x.svg';
 
 import download from '../assets/download.svg';
 import downloadBlack from '../assets/download-black.svg';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import supabase from '../supabase';
 import ImageTo3D from '../components/ImageTo3D';
 import Upload3D from '../components/Upload3D';
 import UploadVideo from '../components/UploadVideo';
-import trash from '../assets/trash.svg';
-// import ModelsStored from '../components/ModelsStored';
+import UploadedImage from '../components/UploadedImage';
+import UploadedModel from '../components/UploadedModel';
+import UploadedVideo from '../components/UploadedVideo';
 
 const Home = () => {
   const [fileData, setFileData] = useState(null);
@@ -35,8 +36,6 @@ const Home = () => {
 
   const [user, setUser] = useState(null);
   const [proxyUrl, setProxyUrl] = useState(''); // Default to the first item's URL
-  // console.log('proxy', proxyUrl);
-  // // console.log('modelDetails', modelDetails);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -100,22 +99,22 @@ const Home = () => {
     }
   };
 
-  const handleGlbUpload = (e) => {
-    const file = e.target.files[0];
+  // const handleGlbUpload = (e) => {
+  //   const file = e.target.files[0];
 
-    if (file && file.name.toLowerCase().endsWith('.glb')) {
-      const objectUrl = URL.createObjectURL(file); // Convert file to Blob URL
+  //   if (file && file.name.toLowerCase().endsWith('.glb')) {
+  //     const objectUrl = URL.createObjectURL(file); // Convert file to Blob URL
 
-      // Reset downloadUrl and set proxyUrl
-      setDownloadUrl({ fbx: '', glb: '', obj: '', usdz: '' });
-      setProxyUrl(objectUrl);
+  //     // Reset downloadUrl and set proxyUrl
+  //     setDownloadUrl({ fbx: '', glb: '', obj: '', usdz: '' });
+  //     setProxyUrl(objectUrl);
 
-      console.log('Reset downloadUrl:', downloadUrl);
-      console.log('Uploaded GLB URL:', objectUrl);
-    } else {
-      alert('Please upload a valid .glb file');
-    }
-  };
+  //     console.log('Reset downloadUrl:', downloadUrl);
+  //     console.log('Uploaded GLB URL:', objectUrl);
+  //   } else {
+  //     alert('Please upload a valid .glb file');
+  //   }
+  // };
 
   const pollTaskStatus = async (taskId) => {
     const headers = {
@@ -180,95 +179,6 @@ const Home = () => {
     pollTaskStatus(modelId); // Start polling for task status
   };
 
-  const [mediaData, setMediaData] = useState([]);
-  const [error, setError] = useState(null);
-
-  const [page, setPage] = useState(1);
-  const pageSize = 8; // Number of items per page
-  const [totalItems, setTotalItems] = useState(0);
-
-  const fetchMedia = useCallback(
-    async (page) => {
-      try {
-        const start = (page - 1) * pageSize;
-        const end = start + pageSize - 1;
-
-        // Fetch paginated media
-        const { data, error, count } = await supabase
-          .from('media')
-          .select('*', { count: 'exact' }) // Fetch count of total rows
-          .eq('user_id', user?.id)
-          .range(start, end);
-
-        if (error) {
-          setError(error.message);
-        } else {
-          setMediaData(data);
-          setTotalItems(count); // Update total rows count
-        }
-      } catch (err) {
-        setError(`An unexpected error occurred: ${err.message}`);
-      }
-    },
-    [user?.id, pageSize],
-  );
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    // Fetch media initially
-    fetchMedia(page);
-
-    // Set up real-time subscription
-    const subscription = supabase
-      .channel('media-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'media',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setMediaData((prev) => [...prev, payload.new]);
-          } else if (payload.eventType === 'UPDATE') {
-            setMediaData((prev) =>
-              prev.map((item) =>
-                item.id === payload.new.id ? payload.new : item,
-              ),
-            );
-          } else if (payload.eventType === 'DELETE') {
-            setMediaData((prev) =>
-              prev.filter((item) => item.id !== payload.old.id),
-            );
-          }
-        },
-      )
-      .subscribe();
-
-    console.log('Subscription created:', subscription);
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, [fetchMedia, user?.id, page]);
-
-  // Pagination Controls
-  const totalPages = Math.ceil(totalItems / pageSize);
-
-  const handleNextPage = () => {
-    if (page < totalPages) setPage((prev) => prev + 1);
-  };
-
-  const handlePreviousPage = () => {
-    if (page > 1) setPage((prev) => prev - 1);
-  };
-
-  console.log('error', error);
-  console.log('data', mediaData);
-
   const tabs = [
     {
       id: 1,
@@ -283,7 +193,24 @@ const Home = () => {
       name: 'Upload Video',
     },
   ];
+
+  const previewTabs = [
+    {
+      id: 1,
+      name: 'Images',
+    },
+    {
+      id: 2,
+      name: '3d Models',
+    },
+    {
+      id: 3,
+      name: 'Videos',
+    },
+  ];
   const [select, setSelect] = useState(1);
+  const [selectPreview, setSelectPreview] = useState(1);
+
   const renderStep = () => {
     switch (select) {
       case 1:
@@ -301,20 +228,7 @@ const Home = () => {
           />
         );
       case 2:
-        return (
-          <Upload3D
-            imageUrl={imageUrl}
-            loading={loading}
-            handleImageUploadAndConvertTo3D={handleImageUploadAndConvertTo3D}
-            errorUploading={errorUploading}
-            fileData={fileData}
-            handleFetchDetails={handleFetchDetails}
-            generateLoading={generateLoading}
-            progress={progress}
-            errorGenerating={errorGenerating}
-            handleGlbUpload={handleGlbUpload}
-          />
-        );
+        return <Upload3D />;
       case 3:
         return <UploadVideo />;
 
@@ -323,17 +237,21 @@ const Home = () => {
     }
   };
 
-  const [isOpen, setIsOpen] = useState(false);
+  const renderPreviewStep = () => {
+    switch (selectPreview) {
+      case 1:
+        return <UploadedImage setDownloadUrl={setDownloadUrl} />;
+      case 2:
+        return <UploadedModel setDownloadUrl={setDownloadUrl} />;
+      case 3:
+        return <UploadedVideo />;
 
-  const deleteMedia = async (id) => {
-    const { error } = await supabase.from('media').delete().eq('id', id);
-
-    if (error) {
-      console.error('Error deleting media:', error.message);
-    } else {
-      setMediaData((prev) => prev.filter((item) => item.id !== id));
+      default:
+        return <div>Unknown step</div>;
     }
   };
+
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="flex h-screen w-full flex-col">
@@ -351,7 +269,7 @@ const Home = () => {
               className="w-6 rounded-md border border-gray-500 p-1"
             />
           </div>
-          <p className="mt-4 text-sm font-medium text-gray-300">Image</p>
+          {/* <p className="mt-4 text-sm font-medium text-gray-300">Image</p> */}
           <div className="relative mb-4 flex items-center justify-between gap-2 rounded-lg bg-[#141416] py-3 text-sm text-white">
             <div
               className="absolute left-0 top-0 h-full rounded-lg bg-[#252527] transition-transform duration-300"
@@ -415,6 +333,7 @@ const Home = () => {
                       </button>
                     </div>
                   </div>
+
                   {isOpen && (
                     <div className="absolute bottom-full right-0 mb-2 flex flex-col gap-3 rounded-lg bg-[#141416] p-4">
                       <p className="font-semibold">Download Settings</p>
@@ -478,55 +397,28 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] text-gray-200">
-          {/* <ModelsStored /> */}
-          <p>Your 3D Models</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {mediaData?.map((data) => (
-              <div
-                className="group relative h-28 w-28 cursor-pointer overflow-hidden rounded-lg bg-purple-gradient p-[1px]"
-                key={data.id}
-                onClick={() => setDownloadUrl(data.meta_data)}
-              >
-                <img
-                  src={data.thumbnail}
-                  alt="Model Thumbnail"
-                  className="h-full w-full rounded-lg bg-[#060405] object-contain p-2"
-                />
+        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405]">
+          <p>Uploaded</p>
 
-                {/* Delete Button with Hover Animation */}
-                <button
-                  className="absolute bottom-0 flex w-full translate-y-2 items-center gap-1 rounded-lg rounded-t-none bg-[#252527] p-1 px-2 text-xs opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent parent click
-                    deleteMedia(data.id);
-                  }}
-                >
-                  <img src={trash} alt="trash" className="w-4" />
-                  <p>Delete</p>
-                </button>
+          <div className="relative mb-4 flex items-center justify-between gap-2 rounded-lg bg-[#141416] py-3 text-sm text-white">
+            <div
+              className="absolute left-0 top-0 h-full rounded-lg bg-[#252527] transition-transform duration-300"
+              style={{
+                width: `${100 / previewTabs.length}%`,
+                transform: `translateX(${previewTabs.findIndex((tab) => tab.id === selectPreview) * 100}%)`,
+              }}
+            ></div>
+            {previewTabs?.map((tab) => (
+              <div
+                key={tab.id}
+                onClick={() => setSelectPreview(tab.id)}
+                className="relative z-10 flex-1 cursor-pointer rounded-lg text-center text-white"
+              >
+                {tab.name}
               </div>
             ))}
           </div>
-          <div className="mt-auto flex w-full items-center justify-between gap-4">
-            <button
-              onClick={handlePreviousPage}
-              disabled={page === 1}
-              className="rounded-lg bg-background-header p-2 px-4"
-            >
-              Previous
-            </button>
-            <span>
-              Page {page} of {totalPages}
-            </span>
-            <button
-              onClick={handleNextPage}
-              disabled={page === totalPages}
-              className="rounded-lg bg-background-header p-2 px-4"
-            >
-              Next
-            </button>
-          </div>
+          {renderPreviewStep()}
         </div>
       </div>
     </div>
