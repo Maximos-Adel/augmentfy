@@ -99,23 +99,6 @@ const Home = () => {
     }
   };
 
-  // const handleGlbUpload = (e) => {
-  //   const file = e.target.files[0];
-
-  //   if (file && file.name.toLowerCase().endsWith('.glb')) {
-  //     const objectUrl = URL.createObjectURL(file); // Convert file to Blob URL
-
-  //     // Reset downloadUrl and set proxyUrl
-  //     setDownloadUrl({ fbx: '', glb: '', obj: '', usdz: '' });
-  //     setProxyUrl(objectUrl);
-
-  //     console.log('Reset downloadUrl:', downloadUrl);
-  //     console.log('Uploaded GLB URL:', objectUrl);
-  //   } else {
-  //     alert('Please upload a valid .glb file');
-  //   }
-  // };
-
   const pollTaskStatus = async (taskId) => {
     const headers = {
       Authorization: `Bearer msy_vIzERkacegAOdOxeRcE7TpEY2E8HnWa6NESx`,
@@ -253,6 +236,22 @@ const Home = () => {
 
   const [isOpen, setIsOpen] = useState(false);
 
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = async () => {
+    const glbUrl = downloadUrl.glb || proxyUrl;
+    const proxyUrl = `/api/glb-proxy?url=${encodeURIComponent(glbUrl)}`;
+    const modelSrc = glbUrl?.includes('meshy') ? proxyUrl : glbUrl;
+
+    try {
+      await navigator.clipboard.writeText(modelSrc);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full flex-col">
       <Header />
@@ -300,8 +299,11 @@ const Home = () => {
                   <button className="flex items-center rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]">
                     Get Pro
                   </button>
-                  <button className="flex items-center rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]">
-                    Embded
+                  <button
+                    className="flex items-center rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]"
+                    onClick={copyToClipboard}
+                  >
+                    {copied ? 'Copied!' : 'Copy Embded Link'}
                   </button>
                   {/* <button
                     className="flex items-center gap-1 rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]"

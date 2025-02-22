@@ -21,6 +21,7 @@ const Upload3D = ({ setProxyUrl }) => {
   }, []);
 
   const [fileData, setFileData] = useState();
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]; // Get the selected file
@@ -36,25 +37,33 @@ const Upload3D = ({ setProxyUrl }) => {
     uploadImage(file, user.id);
   };
 
+  const [uploading, setUploading] = useState(false); // Loading state for new uploads
+
   const uploadImage = async (file, userId) => {
     if (!file || !userId) {
       console.error('File or user ID missing');
       return;
     }
 
-    const filePath = `uploads/${userId}/${file.name}`; // Unique path for each user
+    setUploading(true); // Start loading
+
+    const filePath = `uploads/${userId}/${file.name}`;
 
     // 1️⃣ Upload image to Supabase Storage
     const { data, error } = await supabase.storage
-      .from('images') // Replace with your bucket name
-      .upload(filePath, file);
+      .from('images')
+      .upload(filePath, file, {
+        upsert: false,
+        metadata: { owner: userId }, // ✅ Add owner
+      });
 
     if (error) {
       console.error('Upload failed:', error.message);
+      setUploading(false); // Stop loading on error
       return;
     }
 
-    // 2️⃣ Get the public URL (or use private with auth rules)
+    // 2️⃣ Get the public URL
     const imageUrl = supabase.storage.from('images').getPublicUrl(filePath)
       .data.publicUrl;
 
@@ -63,13 +72,11 @@ const Upload3D = ({ setProxyUrl }) => {
     // 3️⃣ Save the image URL in the media table
     const { error: dbError } = await supabase.from('media').insert([
       {
-        user_id: userId, // Link to the user
+        user_id: userId,
         meta_data: imageUrl,
         thumbnail: imageUrl,
         type: '3d-model',
         name: file.name,
-        // media_type: "image", // Optional field to distinguish types
-        // uploaded_at: new Date(),
       },
     ]);
 
@@ -78,7 +85,52 @@ const Upload3D = ({ setProxyUrl }) => {
     } else {
       console.log('Image saved in media table');
     }
+
+    setUploading(false); // Stop loading after upload
   };
+  // const uploadImage = async (file, userId) => {
+  //   if (!file || !userId) {
+  //     console.error('File or user ID missing');
+  //     return;
+  //   }
+  //   setLoading(true);
+
+  //   const filePath = `uploads/${userId}/${file.name}`; // Unique path for each user
+
+  //   // 1️⃣ Upload image to Supabase Storage
+  //   const { data, error } = await supabase.storage
+  //     .from('images') // Replace with your bucket name
+  //     .upload(filePath, file);
+
+  //   if (error) {
+  //     console.error('Upload failed:', error.message);
+  //     return;
+  //   }
+
+  //   // 2️⃣ Get the public URL (or use private with auth rules)
+  //   const imageUrl = supabase.storage.from('images').getPublicUrl(filePath)
+  //     .data.publicUrl;
+
+  //   console.log('File uploaded successfully:', imageUrl);
+
+  //   // 3️⃣ Save the image URL in the media table
+  //   const { error: dbError } = await supabase.from('media').insert([
+  //     {
+  //       user_id: userId, // Link to the user
+  //       meta_data: imageUrl,
+  //       thumbnail: imageUrl,
+  //       type: '3d-model',
+  //       name: file.name,
+  //     },
+  //   ]);
+
+  //   if (dbError) {
+  //     console.error('Error saving image in media table:', dbError.message);
+  //   } else {
+  //     console.log('Image saved in media table');
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <>
@@ -110,6 +162,12 @@ const Upload3D = ({ setProxyUrl }) => {
         placeholder="Give your generation a name"
         value={fileData?.fileName}
       />
+      {uploading && (
+        <div className="flex h-40 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          <p className="ml-2 text-gray-500">Uploading model...</p>
+        </div>
+      )}
     </>
   );
 };

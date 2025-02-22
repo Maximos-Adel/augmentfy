@@ -28,28 +28,32 @@ const UploadedModel = ({ setProxyUrl }) => {
 
   console.log('user', user);
 
+  const [loading, setLoading] = useState(false);
+
   const fetchMedia = useCallback(
     async (page) => {
+      setLoading(true); // Start loading
       try {
         const start = (page - 1) * pageSize;
         const end = start + pageSize - 1;
 
-        // Fetch paginated media
         const { data, count, error } = await supabase
           .from('media')
-          .select('*', { count: 'exact' }) // Fetch count of total rows
+          .select('*', { count: 'exact' })
           .eq('user_id', user?.id)
-          .eq('type', '3d-model') // Filter where type is '3d-model'
+          .eq('type', '3d-model')
           .range(start, end);
 
         if (error) {
           setError(error.message);
         } else {
           setMediaData(data);
-          setTotalItems(count); // Update total rows count
+          setTotalItems(count);
         }
       } catch (err) {
         setError(`An unexpected error occurred: ${err.message}`);
+      } finally {
+        setLoading(false); // Stop loading after fetch
       }
     },
     [user?.id, pageSize],
@@ -58,10 +62,8 @@ const UploadedModel = ({ setProxyUrl }) => {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Fetch media initially
     fetchMedia(page);
 
-    // Set up real-time subscription
     const subscription = supabase
       .channel('media-changes')
       .on(
@@ -90,8 +92,6 @@ const UploadedModel = ({ setProxyUrl }) => {
       )
       .subscribe();
 
-    console.log('Subscription created:', subscription);
-
     return () => {
       supabase.removeChannel(subscription);
     };
@@ -111,12 +111,47 @@ const UploadedModel = ({ setProxyUrl }) => {
   console.log('error', error);
   console.log('data', mediaData);
 
-  const deleteMedia = async (id) => {
-    const { error } = await supabase.from('media').delete().eq('id', id);
+  // const deleteMedia = async (id) => {
+  //   const { error } = await supabase.from('media').delete().eq('id', id);
 
-    if (error) {
-      console.error('Error deleting media:', error.message);
+  //   if (error) {
+  //     console.error('Error deleting media:', error.message);
+  //   } else {
+  //     setMediaData((prev) => prev.filter((item) => item.id !== id));
+  //   }
+  // };
+
+  const deleteMedia = async (id, userId, fileName) => {
+    if (!id || !userId || !fileName) {
+      console.error('Missing required parameters');
+      return;
+    }
+
+    const filePath = `uploads/${userId}/${fileName}`; // Path to the file
+    console.log('filePath', filePath);
+
+    // 1️⃣ Delete from Supabase Storage (Bucket)
+    const { error: storageError } = await supabase.storage
+      .from('images') // Bucket name
+      .remove([filePath]);
+
+    if (storageError) {
+      console.error('Error deleting file from storage:', storageError.message);
+      return;
+    }
+
+    console.log('File deleted from bucket:', filePath);
+
+    // 2️⃣ Delete from `media` Table
+    const { error: dbError } = await supabase
+      .from('media')
+      .delete()
+      .eq('id', id);
+
+    if (dbError) {
+      console.error('Error deleting media from table:', dbError.message);
     } else {
+      console.log('Deleted from table:', id);
       setMediaData((prev) => prev.filter((item) => item.id !== id));
     }
   };
@@ -125,6 +160,7 @@ const UploadedModel = ({ setProxyUrl }) => {
     <>
       <div className="mt-4 flex flex-wrap gap-2">
         <ul className="flex w-full cursor-pointer flex-col gap-2 rounded-lg p-[1px]">
+          {loading && <p>loading</p>}
           {mediaData?.map((data) => (
             <li
               className="flex items-center justify-between"
@@ -136,7 +172,7 @@ const UploadedModel = ({ setProxyUrl }) => {
                 className="flex translate-y-2 items-center gap-1 rounded-lg bg-[#252527] p-1 px-2 text-xs"
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent parent click
-                  deleteMedia(data.id);
+                  deleteMedia(data.id, user.id, data.name);
                 }}
               >
                 <img src={trash} alt="trash" className="w-4" />
