@@ -253,10 +253,10 @@ const Home = () => {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col lg:h-screen">
       <Header />
-      <div className="flex h-full items-center gap-8 bg-[#060405] p-8 text-white">
-        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405] text-gray-400">
+      <div className="flex h-full flex-col items-stretch gap-8 bg-[#060405] p-8 text-white lg:flex-row">
+        <div className="flex h-full w-full flex-col gap-2 bg-[#060405] text-gray-400 lg:w-1/4">
           <div className="mb-1 flex items-center justify-between">
             <div className="flex items-center gap-2 text-gray-300">
               <img src={cubic} alt="" className="w-6" />
@@ -290,7 +290,7 @@ const Home = () => {
 
           {renderStep()}
         </div>
-        <div className="flex h-full w-2/4 flex-col gap-2 bg-[#060405] text-gray-200">
+        <div className="flex h-full w-full flex-col gap-2 bg-[#060405] text-gray-200 lg:w-2/4">
           <div className="h-full rounded-xl bg-purple-gradient p-[1px]">
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
               <ModelViewer glbUrl={downloadUrl.glb || proxyUrl} />
@@ -399,7 +399,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="flex h-full w-1/4 flex-col gap-2 bg-[#060405]">
+        <div className="flex h-full w-full flex-col gap-2 bg-[#060405] lg:w-1/4">
           <p>Uploaded</p>
 
           <div className="relative mb-4 flex items-center justify-between gap-2 rounded-lg bg-[#141416] py-3 text-sm text-white">

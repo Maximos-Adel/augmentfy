@@ -42,7 +42,7 @@ const Login = () => {
         <img src={fy} alt="FY Logo" />
       </div>
       <form
-        className="flex w-[20%] flex-col gap-4 text-black"
+        className="flex w-full flex-col gap-4 text-black md:w-1/2 lg:w-1/4"
         onSubmit={signIn}
       >
         <input

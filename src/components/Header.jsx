@@ -31,7 +31,7 @@ const Header = () => {
   };
 
   return (
-    <div className="flex items-center justify-between bg-background-header p-4 text-sm text-white">
+    <div className="flex flex-col items-center justify-between bg-background-header p-4 text-sm text-white lg:flex-row">
       <div className="flex items-center justify-center">
         <img src={arrow} alt="logo" className="mr-1 w-4" />
         <p>| Exit to home page</p>
