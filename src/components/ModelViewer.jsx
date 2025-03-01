@@ -34,7 +34,7 @@ const ModelViewer = ({ glbUrl }) => {
         crossorigin="anonymous"
         style={{ width: '100%', height: '500px' }}
       ></model-viewer>
-      {glbUrl && (
+      {glbUrl && !glbUrl.includes('meshy') && (
         <button
           className="mt-auto flex w-full items-center justify-center rounded-lg border border-[#3f3f44] bg-[#252527] p-2 px-2 text-center text-xs hover:bg-[#1c1c1f]"
           onClick={copyToClipboard}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import supabase from '../supabase';
 import trash from '../assets/trash.svg';
+import rename from '../assets/rename.svg';
 
 const UploadedModel = ({ setProxyUrl }) => {
   const [mediaData, setMediaData] = useState([]);
@@ -156,28 +157,162 @@ const UploadedModel = ({ setProxyUrl }) => {
     }
   };
 
+  // const renameFile = async (bucketName, oldPath, newPath) => {
+  //   console.log('Renaming:', oldPath, '→', newPath);
+
+  //   // Check if file exists before renaming
+  //   const { data: fileData, error: fileError } = await supabase.storage
+  //     .from(bucketName)
+  //     .list(`uploads/${user.id}`);
+
+  //   if (fileError) {
+  //     console.error('Error listing files:', fileError.message);
+  //     return;
+  //   }
+
+  //   const fileExists = fileData.some((file) => file.name === 'model (12).glb');
+  //   if (!fileExists) {
+  //     console.error('File does not exist:', oldPath);
+  //     return;
+  //   }
+
+  //   // Copy the file to the new path
+  //   const { error: copyError } = await supabase.storage
+  //     .from(bucketName)
+  //     .copy(oldPath, newPath);
+
+  //   if (copyError) {
+  //     console.error('Error copying file:', copyError.message);
+  //     return;
+  //   }
+
+  //   // Delete the old file after copying
+  //   const { error: removeError } = await supabase.storage
+  //     .from(bucketName)
+  //     .remove([oldPath]);
+
+  //   if (removeError) {
+  //     console.error('Error deleting original file:', removeError.message);
+  //     return;
+  //   }
+
+  //   console.log('File renamed successfully!');
+  // };
+
+  const renameFile = async (bucketName, oldPath, newPath, userId) => {
+    console.log('Renaming:', oldPath, '→', newPath);
+
+    // 🗑️ Step 1: Try deleting the target file first (if it already exists)
+    await supabase.storage.from(bucketName).remove([newPath]);
+
+    // 📂 Step 2: Copy the file to the new path
+    const { error: copyError } = await supabase.storage
+      .from(bucketName)
+      .copy(oldPath, newPath);
+
+    if (copyError) {
+      console.error('Error copying file:', copyError.message);
+      return;
+    }
+
+    // 🗑️ Step 3: Delete the old file after successful copy
+    const { error: removeError } = await supabase.storage
+      .from(bucketName)
+      .remove([oldPath]);
+
+    if (removeError) {
+      console.error('Error deleting original file:', removeError.message);
+      return;
+    }
+
+    // ✅ Step 4: Extract just the filename (e.g., "uploads/user123/model.glb" → "model.glb")
+    const oldFileName = oldPath.split('/').pop();
+    const newFileName = newPath.split('/').pop();
+
+    // 🛠 Step 5: Update the filename in the `media` table
+    const { error: dbError } = await supabase
+      .from('media')
+      .update({ name: newFileName })
+      .eq('name', oldFileName) // Match by the old file name
+      .eq('user_id', userId); // Ensure only the correct user's file is updated
+
+    if (dbError) {
+      console.error('Error updating database:', dbError.message);
+      return;
+    }
+
+    console.log('File renamed successfully in storage & database!');
+  };
+
+  const [renamingId, setRenamingId] = useState(null); // Track which item is being renamed
+  const [updatedName, setUpdatedName] = useState(''); // Store the new name
+
   return (
     <>
       <div className="mt-4 flex flex-wrap gap-2">
-        <ul className="flex w-full cursor-pointer flex-col gap-2 rounded-lg p-[1px]">
+        <ul className="flex h-full w-full cursor-pointer flex-col gap-3 rounded-lg p-[1px]">
           {loading && <p>loading</p>}
+
           {mediaData?.map((data) => (
             <li
               className="flex items-center justify-between"
               key={data.id}
               onClick={() => setProxyUrl(data?.thumbnail)}
             >
-              <p>{data.name}</p>
-              <button
-                className="flex translate-y-2 items-center gap-1 rounded-lg bg-[#252527] p-1 px-2 text-xs"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent parent click
-                  deleteMedia(data.id, user.id, data.name);
-                }}
-              >
-                <img src={trash} alt="trash" className="w-4" />
-                <p>Delete</p>
-              </button>
+              {/* Show input if renaming, otherwise show the name */}
+              {renamingId === data.id ? (
+                <input
+                  type="text"
+                  className="rouned-md text-black outline-none"
+                  value={updatedName}
+                  onChange={(e) => setUpdatedName(e.target.value)}
+                  autoFocus
+                />
+              ) : (
+                <p>{data.name}</p>
+              )}
+              <div className="flex h-full items-center gap-1">
+                {/* Rename button */}
+                {renamingId === data.id ? (
+                  <button
+                    className="flex items-center gap-1 rounded-lg bg-[#252527] p-1 px-2 text-xs"
+                    onClick={() => {
+                      renameFile(
+                        'images',
+                        `uploads/${user.id}/${data.name}`,
+                        `uploads/${user.id}/${updatedName}`,
+                        user.id,
+                      );
+                      setRenamingId(null); // Hide input after renaming
+                    }}
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    className="flex items-center gap-1 rounded-lg bg-[#252527] p-1 px-2 text-xs"
+                    onClick={() => {
+                      setRenamingId(data.id); // Show input field
+                      setUpdatedName(data.name); // Pre-fill with old name
+                    }}
+                  >
+                    <img src={rename} alt="rename" className="w-4" />
+                    <p>Rename</p>
+                  </button>
+                )}
+
+                {/* Delete button */}
+                <button
+                  className="flex items-center gap-1 rounded-lg bg-[#252527] p-1 px-2 text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteMedia(data.id, user.id, data.name);
+                  }}
+                >
+                  <img src={trash} alt="trash" className="w-4" />
+                  <p>Delete</p>
+                </button>
+              </div>
             </li>
           ))}
         </ul>

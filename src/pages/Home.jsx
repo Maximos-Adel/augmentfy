@@ -129,6 +129,8 @@ const Home = () => {
               user_id: user.id,
               meta_data: data.model_urls,
               thumbnail: data.thumbnail_url,
+              type: 'image',
+              name: fileData.fileName,
             });
             setGenerateLoading(false);
             setProgress(100); // Task is fully completed
@@ -193,6 +195,11 @@ const Home = () => {
   ];
   const [select, setSelect] = useState(1);
   const [selectPreview, setSelectPreview] = useState(1);
+  const handleSetProxyUrl = (url) => {
+    console.log('Setting proxyUrl:', url);
+    setDownloadUrl({ glb: null }); // Clear download URL
+    setProxyUrl(url);
+  };
 
   const renderStep = () => {
     switch (select) {
@@ -211,7 +218,7 @@ const Home = () => {
           />
         );
       case 2:
-        return <Upload3D setProxyUrl={setProxyUrl} />;
+        return <Upload3D setProxyUrl={handleSetProxyUrl} />;
       case 3:
         return <UploadVideo />;
 
@@ -225,7 +232,7 @@ const Home = () => {
       case 1:
         return <UploadedImage setDownloadUrl={setDownloadUrl} />;
       case 2:
-        return <UploadedModel setProxyUrl={setProxyUrl} />;
+        return <UploadedModel setProxyUrl={handleSetProxyUrl} />;
       case 3:
         return <UploadedVideo />;
 
@@ -293,7 +300,9 @@ const Home = () => {
         <div className="flex h-full w-full flex-col gap-2 bg-[#060405] text-gray-200 lg:w-2/4">
           <div className="h-full rounded-xl bg-purple-gradient p-[1px]">
             <div className="flex h-full flex-col rounded-xl bg-[#060405] p-4">
-              <ModelViewer glbUrl={downloadUrl.glb || proxyUrl} />
+              {/* <ModelViewer glbUrl={downloadUrl.glb || proxyUrl} /> */}
+              <ModelViewer glbUrl={downloadUrl?.glb ?? proxyUrl} />
+
               {downloadUrl.glb && (
                 <div className="relative mt-auto flex w-full items-stretch justify-end gap-2 rounded-lg bg-[#141416] p-2 text-xs">
                   <button className="flex items-center rounded-lg border border-[#3f3f44] bg-[#252527] p-1 px-2 hover:bg-[#1c1c1f]">
